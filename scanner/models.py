@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import json
+from storages.backends.gcloud import GoogleCloudStorage
 
 
 class Receipt(models.Model):
@@ -14,7 +15,7 @@ class Receipt(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="receipts/")
+    image = models.ImageField(storage=GoogleCloudStorage(), upload_to="receipts/")
     original_filename = models.CharField(max_length=255)
 
     # OCR Results
@@ -58,5 +59,3 @@ class ReceiptItem(models.Model):
 
     def __str__(self):
         return f"{self.name} - ${self.total}"
-
-

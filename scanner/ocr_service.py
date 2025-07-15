@@ -38,53 +38,34 @@ class ReceiptOCRService:
             print(f"Warning: Could not configure Tesseract path: {e}")
             print("Please ensure Tesseract is installed and accessible")
 
-    def preprocess_image(self, image_path):
-        """Preprocess image for better OCR results"""
+    def preprocess_image(self, image_file):
+        """Preprocess image for better OCR results (file-like object)"""
         try:
-            # Read image
-            image = cv2.imread(str(image_path))
-
-            # Convert to grayscale
+            file_bytes = np.asarray(bytearray(image_file.read()), dtype=np.uint8)
+            image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-            # Apply threshold to get image with only black and white
             _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
             return thresh
         except Exception as e:
             print(f"Error in image preprocessing: {e}")
-            # Fallback: return original image path for direct OCR
-            return str(image_path)
+            return None
 
-    def extract_text(self, image_path):
-        """Extract text from receipt image using OCR"""
+    def extract_text(self, image_file):
+        """Extract text from receipt image using OCR (file-like object)"""
         try:
-            # Try to preprocess image first
-            processed_image = self.preprocess_image(image_path)
-
-            if isinstance(processed_image, str):
-                # Fallback: use original image directly
-                pil_image = Image.open(processed_image)
-            else:
-                # Convert preprocessed image back to PIL Image for tesseract
-                pil_image = Image.fromarray(processed_image)
-
-            # Perform OCR with different PSM modes for better results
-            configs = [
-                "--psm 6",  # Single uniform block of text
-                "--psm 4",  # Single column of text
-                "--psm 3",  # Fully automatic page segmentation
-            ]
-
+            processed_image = self.preprocess_image(image_file)
+            if processed_image is None:
+                return ""
+            pil_image = Image.fromarray(processed_image)
+            configs = ["--psm 6", "--psm 4", "--psm 3"]
             text = ""
             for config in configs:
                 try:
                     text = pytesseract.image_to_string(pil_image, config=config)
-                    if text.strip():  # If we got some text, use it
+                    if text.strip():
                         break
                 except:
                     continue
-
             return text.strip()
         except Exception as e:
             print(f"Error extracting text: {str(e)}")
@@ -420,20 +401,14 @@ class ReceiptOCRService:
 
         return items
 
-    def process_receipt(self, image_path):
-        """Complete pipeline to process a receipt image"""
+    def process_receipt(self, image_file):
+        """Complete pipeline to process a receipt image (file-like object)"""
         try:
-            # Extract text using OCR
-            raw_text = self.extract_text(image_path)
-
+            raw_text = self.extract_text(image_file)
             if not raw_text:
                 return None
-
-            # Parse the extracted text
             parsed_data = self.parse_receipt_data(raw_text)
-
             return parsed_data
-
         except Exception as e:
             print(f"Error processing receipt: {str(e)}")
             return None

@@ -16,6 +16,9 @@ import os
 import dj_database_url
 from google.oauth2 import service_account
 import json
+import storages
+
+print(storages.__file__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -154,13 +157,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # WhiteNoise configuration
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Media files (user uploads)
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Redirect all login-required redirects to /login/
@@ -173,11 +169,11 @@ STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
 
 # Google Cloud Storage Configuration
 
-DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = 'smart-account-management'
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+GS_BUCKET_NAME = "smart-account-reciept-holder"
 
+GOOGLE_CREDENTIALS_JSON = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 
-GOOGLE_CREDENTIALS_JSON = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
 if GOOGLE_CREDENTIALS_JSON:
     GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
         json.loads(GOOGLE_CREDENTIALS_JSON)
@@ -185,4 +181,5 @@ if GOOGLE_CREDENTIALS_JSON:
 else:
     GS_CREDENTIALS = None  # Or handle error/raise exception
 
-MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
+# Set MEDIA_URL to GCS bucket URL for all media files
+MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
