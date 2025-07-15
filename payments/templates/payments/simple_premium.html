@@ -46,7 +46,7 @@ Account Management{% endblock %} {% block content %}
         <div class="card-body text-center">
           <div class="mb-4">
             <span class="display-4 text-primary font-weight-bold">
-              ${{ upgrade.price }}
+              £{{ upgrade.price }}
             </span>
             <small class="text-muted">/lifetime</small>
           </div>
@@ -119,7 +119,7 @@ Account Management{% endblock %} {% block content %}
       <div class="modal-body">
         <div class="text-center mb-3">
           <h6>{{ upgrade.name }}</h6>
-          <p class="text-muted">One-time payment: ${{ upgrade.price }}</p>
+          <p class="text-muted">One-time payment: £{{ upgrade.price }}</p>
         </div>
         <form id="payment-form">
           <div class="mb-3">

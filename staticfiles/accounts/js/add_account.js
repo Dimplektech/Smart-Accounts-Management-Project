@@ -264,7 +264,7 @@ function updateAccountPreview() {
         if (previewName) previewName.textContent = name || 'Account Name';
         if (previewType) previewType.textContent = type ? getAccountTypeLabel(type) : 'Account Type';
         if (previewBalance) {
-            previewBalance.textContent = `$${balance.toLocaleString('en-US', {
+            previewBalance.textContent = `£${balance.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             })}`;

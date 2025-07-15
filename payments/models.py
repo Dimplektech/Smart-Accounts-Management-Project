@@ -30,7 +30,7 @@ class Payment(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Payment {self.stripe_payment_intent_id} - {self.user.username} - ${self.amount}"
+        return f"Payment {self.stripe_payment_intent_id} - {self.user.username} - £{self.amount}"
 
 
 class Subscription(models.Model):
@@ -43,9 +43,9 @@ class Subscription(models.Model):
     ]
     
     PLAN_CHOICES = [
-        ('basic', 'Basic Plan - $9.99/month'),
-        ('premium', 'Premium Plan - $19.99/month'),
-        ('pro', 'Pro Plan - $29.99/month'),
+        ('basic', 'Basic Plan - £9.99/month'),
+        ('premium', 'Premium Plan - £19.99/month'),
+        ('pro', 'Pro Plan - £29.99/month'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')

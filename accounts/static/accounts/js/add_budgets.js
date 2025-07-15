@@ -65,13 +65,13 @@ function setupBudgetPreview() {
         <h6><i class="fas fa-target me-2"></i>Budget Preview</h6>
         <div class="d-flex justify-content-between mb-2">
             <span class="fw-bold" id="previewBudgetName">Budget Name</span>
-            <span class="fw-bold text-warning" id="previewBudgetAmount">$0.00</span>
+            <span class="fw-bold text-warning" id="previewBudgetAmount">£0.00</span>
         </div>
         <div class="progress-preview-bar">
             <div class="progress-preview-fill" id="previewProgressFill" style="width: 0%"></div>
         </div>
         <div class="d-flex justify-content-between mt-2">
-            <small class="text-muted">Spent: $0.00</small>
+            <small class="text-muted">Spent: 0.00</small>
             <small class="text-muted" id="previewPercentage">0%</small>
         </div>
         <div class="budget-timeline">
@@ -109,7 +109,7 @@ function updateBudgetPreview() {
     
     if (previewAmount && amountInput) {
         const amount = parseFloat(amountInput.value) || 0;
-        previewAmount.textContent = `$${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        previewAmount.textContent = `£${amount.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
     }
     
     // Show/hide preview
@@ -249,13 +249,13 @@ function setupBudgetPreview() {
         <h6><i class="fas fa-target me-2"></i>Budget Preview</h6>
         <div class="d-flex justify-content-between mb-2">
             <span class="fw-bold" id="previewBudgetName">Budget Name</span>
-            <span class="fw-bold text-warning" id="previewBudgetAmount">$0.00</span>
+            <span class="fw-bold text-warning" id="previewBudgetAmount">%0.00</span>
         </div>
         <div class="progress-preview-bar">
             <div class="progress-preview-fill" id="previewProgressFill" style="width: 0%"></div>
         </div>
         <div class="d-flex justify-content-between mt-2">
-            <small class="text-muted">Spent: $0.00</small>
+            <small class="text-muted">Spent: £0.00</small>
             <small class="text-muted" id="previewPercentage">0%</small>
         </div>
         <div class="budget-timeline">

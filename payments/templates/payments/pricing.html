@@ -358,7 +358,7 @@
 
             <div class="card-body text-center">
               <div class="price-highlight">
-                {% if plan.price == 0 %} FREE {% else %} ${{ plan.price }}
+                {% if plan.price == 0 %} FREE {% else %} £{{ plan.price }}
                 <span class="price-period">/lifetime</span>
                 {% endif %}
               </div>
@@ -621,7 +621,7 @@
         } Plan Upgrade`;
         document.getElementById(
           "upgrade-price"
-        ).textContent = `One-time payment: $${selectedPlan.price}`;
+        ).textContent = `One-time payment: £${selectedPlan.price}`;
 
         // Create payment intent
         createPaymentIntent(selectedPlan.price, "premium_upgrade");

@@ -109,7 +109,7 @@
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Spent:</span>
                             <span class="{% if budget.is_over_budget %}text-danger{% else %}text-success{% endif %}">
-                                ${{ budget.spent_amount|floatformat:2 }} / ${{ budget.amount|floatformat:2 }}
+                                £{{ budget.spent_amount|floatformat:2 }} / £{{ budget.amount|floatformat:2 }}
                             </span>
                         </div>
                         
@@ -127,7 +127,7 @@
                         <div class="d-flex justify-content-between">
                             <span class="text-muted">Remaining:</span>
                             <span class="{% if budget.remaining_amount < 0 %}text-danger{% else %}text-success{% endif %}">
-                                ${{ budget.remaining_amount|floatformat:2 }}
+                                £{{ budget.remaining_amount|floatformat:2 }}
                             </span>
                         </div>
                     </div>

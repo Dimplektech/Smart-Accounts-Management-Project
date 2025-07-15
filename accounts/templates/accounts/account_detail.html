@@ -60,7 +60,7 @@
                     <hr>
                     
                     <div class="text-center">
-                        <h4 class="text-success mb-0">${{ account.balance|floatformat:2 }}</h4>
+                        <h4 class="text-success mb-0">£{{ account.balance|floatformat:2 }}</h4>
                         <small class="text-muted">Current Balance</small>
                     </div>
                 </div>
@@ -94,7 +94,7 @@
                                         </span>
                                     </td>
                                     <td class="{% if transaction.transaction_type == 'income' %}text-success{% elif transaction.transaction_type == 'expense' %}text-danger{% else %}text-info{% endif %}">
-                                        {% if transaction.transaction_type == 'income' %}+{% elif transaction.transaction_type == 'expense' %}-{% endif %}${{ transaction.amount|floatformat:2 }}
+                                        {% if transaction.transaction_type == 'income' %}+{% elif transaction.transaction_type == 'expense' %}-{% endif %}£{{ transaction.amount|floatformat:2 }}
                                     </td>
                                 </tr>
                                 {% empty %}

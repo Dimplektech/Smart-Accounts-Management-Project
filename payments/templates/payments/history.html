@@ -35,7 +35,7 @@ Account Management{% endblock %} {% block content %}
                     <small class="text-muted d-block">Subscription</small>
                 {% endif %}
               </td>
-              <td>${{ payment.amount }}</td>
+              <td>£{{ payment.amount }}</td>
               <td>
                 <span
                   class="badge badge-{% if payment.payment_type == 'subscription' %}primary{% elif payment.payment_type == 'premium_feature' %}success{% else %}secondary{% endif %}"

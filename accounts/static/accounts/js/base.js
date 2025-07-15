@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeBaseComponents();
     setupGlobalEventListeners();
     setupAccessibility();
-    fixDropdownIssues();
+    // fixDropdownIssues(); // Disabled to allow Bootstrap's default dropdown behavior
     console.log('✅ Base Components Ready!');
 
     // Show and manages messages if any
@@ -71,19 +71,20 @@ function initializeTooltips() {
 }
 
 function setupSmoothScrolling() {
-    // Smooth scrolling for anchor links
+    // Smooth scrolling for anchor links (only for in-page navigation, not dropdowns)
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
+            // Only handle if the target exists on the page and href is not just '#'
+            if (targetId && targetId !== '#' && document.querySelector(targetId)) {
                 e.preventDefault();
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             }
         });
     });

@@ -80,7 +80,7 @@
                                         <i class="fas fa-dollar-sign me-1"></i>Amount
                                     </label>
                                     <div class="input-group">
-                                        <span class="input-group-text">$</span>
+                                        <span class="input-group-text">£</span>
                                         <input type="number" 
                                                name="{{ form.amount.name }}" 
                                                id="{{ form.amount.id_for_label }}" 
@@ -120,7 +120,7 @@
                                         <option value="">Select Account</option>
                                         {% for account in form.account.field.queryset %}
                                             <option value="{{ account.pk }}" {% if form.account.value == account.pk %}selected{% endif %}>
-                                                {{ account.name }} - ${{ account.balance|floatformat:2 }}
+                                                {{ account.name }} - £{{ account.balance|floatformat:2 }}
                                             </option>
                                         {% endfor %}
                                     </select>

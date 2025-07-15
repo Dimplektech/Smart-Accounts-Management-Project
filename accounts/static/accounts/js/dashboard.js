@@ -52,7 +52,9 @@ function animateCounters() {
         const target = parseFloat(counter.textContent.replace(/[^\d.-]/g, ''));
         const duration = 2000; // 2 seconds
         const start = performance.now();
-        const isMonetary = counter.textContent.includes('$');
+        // Always treat balance, income, expenses as monetary
+        const monetaryKeys = ['balance', 'income', 'expenses'];
+        const isMonetary = monetaryKeys.includes(counter.getAttribute('data-animate'));
         
         function updateCounter(currentTime) {
             const elapsed = currentTime - start;
@@ -63,7 +65,7 @@ function animateCounters() {
             const current = target * easeOutQuart;
             
             if (isMonetary) {
-                counter.textContent = `$${current.toLocaleString('en-US', {
+                counter.textContent = `£${current.toLocaleString('en-GB', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 })}`;
@@ -78,7 +80,7 @@ function animateCounters() {
         
         // Start animation after a delay
         setTimeout(() => {
-            counter.textContent = isMonetary ? '$0.00' : '0';
+            counter.textContent = isMonetary ? '£0.00' : '0';
             requestAnimationFrame(updateCounter);
         }, 500);
     });
@@ -99,10 +101,16 @@ function initializeCharts() {
     initializeCategoryChart();
 }
 
+let monthlyChartInstance = null;
 function initializeMonthlyChart() {
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
-    
+
+    // Destroy previous chart instance if it exists
+    if (monthlyChartInstance) {
+        monthlyChartInstance.destroy();
+    }
+
     // Use real data from Django backend or fallback to sample data
     let chartData;
     if (window.dashboardData && window.dashboardData.monthlyData && window.dashboardData.monthlyData.length > 0) {
@@ -176,8 +184,8 @@ function initializeMonthlyChart() {
             ]
         };
     }
-    
-    new Chart(ctx, {
+
+    monthlyChartInstance = new Chart(ctx, {
         type: 'line',
         data: chartData,
         options: {
@@ -208,7 +216,7 @@ function initializeMonthlyChart() {
                     displayColors: true,
                     callbacks: {
                         label: function(context) {
-                            return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
+                            return `${context.dataset.label}: £${context.parsed.y.toLocaleString()}`;
                         }
                     }
                 }
@@ -237,7 +245,7 @@ function initializeMonthlyChart() {
                     },
                     ticks: {
                         callback: function(value) {
-                            return '$' + value.toLocaleString();
+                            return '£' + value.toLocaleString();
                         },
                         font: {
                             weight: '500'
@@ -254,10 +262,16 @@ function initializeMonthlyChart() {
     });
 }
 
+let categoryChartInstance = null;
 function initializeCategoryChart() {
     const ctx = document.getElementById('categoryChart');
     if (!ctx) return;
-    
+
+    // Destroy previous chart instance if it exists
+    if (categoryChartInstance) {
+        categoryChartInstance.destroy();
+    }
+
     // Use real data from Django backend or fallback to sample data
     let chartData;
     if (window.dashboardData && window.dashboardData.categorySpending && window.dashboardData.categorySpending.length > 0) {
@@ -265,7 +279,7 @@ function initializeCategoryChart() {
         const colors = [
             '#ef4444', '#f59e0b', '#10b981', '#06b6d4', '#8b5cf6', '#ec4899', '#f97316', '#84cc16'
         ];
-        
+
         chartData = {
             labels: realData.map(item => item.category__name),
             datasets: [{
@@ -289,8 +303,8 @@ function initializeCategoryChart() {
             }]
         };
     }
-    
-    new Chart(ctx, {
+
+    categoryChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: chartData,
         options: {
@@ -323,7 +337,7 @@ function initializeCategoryChart() {
                             }
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = ((context.parsed / total) * 100).toFixed(1);
-                            return `${context.label}: $${context.parsed.toLocaleString()} (${percentage}%)`;
+                            return `${context.label}: £${context.parsed.toLocaleString()} (${percentage}%)`;
                         }
                     }
                 }

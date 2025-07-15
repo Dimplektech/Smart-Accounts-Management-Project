@@ -52,7 +52,7 @@ function animateCounters() {
         const target = parseFloat(counter.textContent.replace(/[^\d.-]/g, ''));
         const duration = 2000; // 2 seconds
         const start = performance.now();
-        const isMonetary = counter.textContent.includes('$');
+        const isMonetary = counter.textContent.includes('£') || counter.textContent.includes('$');
         
         function updateCounter(currentTime) {
             const elapsed = currentTime - start;
@@ -63,7 +63,7 @@ function animateCounters() {
             const current = target * easeOutQuart;
             
             if (isMonetary) {
-                counter.textContent = `$${current.toLocaleString('en-US', {
+                counter.textContent = `£${current.toLocaleString('en-GB', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 })}`;
@@ -78,7 +78,7 @@ function animateCounters() {
         
         // Start animation after a delay
         setTimeout(() => {
-            counter.textContent = isMonetary ? '$0.00' : '0';
+            counter.textContent = isMonetary ? '£0.00' : '0';
             requestAnimationFrame(updateCounter);
         }, 500);
     });
@@ -208,7 +208,7 @@ function initializeMonthlyChart() {
                     displayColors: true,
                     callbacks: {
                         label: function(context) {
-                            return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
+                            return `${context.dataset.label}: £${context.parsed.y.toLocaleString()}`;
                         }
                     }
                 }
@@ -237,7 +237,7 @@ function initializeMonthlyChart() {
                     },
                     ticks: {
                         callback: function(value) {
-                            return '$' + value.toLocaleString();
+                            return '£' + value.toLocaleString();
                         },
                         font: {
                             weight: '500'
@@ -323,7 +323,7 @@ function initializeCategoryChart() {
                             }
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = ((context.parsed / total) * 100).toFixed(1);
-                            return `${context.label}: $${context.parsed.toLocaleString()} (${percentage}%)`;
+                            return `${context.label}: £${context.parsed.toLocaleString()} (${percentage}%)`;
                         }
                     }
                 }
@@ -536,5 +536,3 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-console.log('📊 Dashboard JavaScript Loaded');
-console.log('Dashboard Shortcuts: R (Refresh)');
