@@ -185,4 +185,4 @@ if GOOGLE_CREDENTIALS_JSON:
 else:
     GS_CREDENTIALS = None  # Or handle error/raise exception
 
-MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'git rm --cached Smart-Accounts-Management
+MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
