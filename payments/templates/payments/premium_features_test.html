@@ -1,0 +1,425 @@
+{% extends 'accounts/base.html' %} {% load static %} {% block title %}Premium
+Features - Smart Account Management{% endblock %} {% block extra_head %}
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  /* Premium features page styling */
+  .premium-features-wrapper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+  }
+
+  .features-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 3rem 2rem;
+    margin: 0 auto;
+    max-width: 1200px;
+  }
+
+  .features-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .features-subtitle {
+    color: #6c757d;
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+  }
+
+  .feature-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .feature-owned {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #28a745;
+    box-shadow: 0 10px 30px rgba(40, 167, 69, 0.2);
+  }
+
+  .feature-owned:hover {
+    transform: translateY(-5px);
+  }
+
+  .card-body {
+    padding: 2rem;
+  }
+
+  .card-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+  }
+
+  .card-text {
+    color: #6c757d;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  .price-tag {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+  }
+
+  .price-tag small {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 400;
+  }
+
+  .card-footer {
+    padding: 1.5rem 2rem;
+    background: transparent;
+    border: none;
+  }
+
+  .purchase-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  .purchase-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    width: 100%;
+  }
+
+  .badge-success {
+    background: #28a745;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+  }
+
+  .subscription-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-top: 3rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+
+  .subscription-section h3 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .btn-outline-primary {
+    border: 2px solid #667eea;
+    color: #667eea;
+    border-radius: 50px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline-primary:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  }
+
+  /* Modal improvements */
+  .modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 768px) {
+    .features-container {
+      margin: 1rem;
+      padding: 2rem 1rem;
+    }
+
+    .price-tag {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="premium-features-wrapper">
+  <div class="container">
+    <div class="features-container">
+      <div class="row">
+        <div class="col-12 text-center">
+          <h1 class="display-3 features-header">Premium Features</h1>
+          <p class="features-subtitle">
+            Enhance your experience with individual premium features
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        {% for feature in features %}
+        <div class="col-lg-6 mb-4">
+          <div
+            class="card feature-card h-100 {% if feature.feature_type in user_features %}feature-owned{% endif %}"
+          >
+            <div class="card-body">
+              <h5 class="card-title">
+                {{ feature.name }} {% if feature.feature_type in user_features%}
+                <span class="badge badge-success ms-2">Owned</span>
+                {% endif %}
+              </h5>
+              <p class="card-text">{{ feature.description }}</p>
+              <div class="price-tag">
+                ${{ feature.price }}
+                <small class="text-muted">one-time</small>
+              </div>
+            </div>
+            <div class="card-footer">
+              {% if feature.feature_type in user_features %}
+              <button class="btn btn-success" disabled>
+                <i class="fas fa-check me-2"></i>Already Purchased
+              </button>
+              {% else %}
+              <button
+                class="btn purchase-btn"
+                data-feature="{{ feature.feature_type }}"
+                data-name="{{ feature.name }}"
+                data-price="{{ feature.price }}"
+              >
+                <i class="fas fa-shopping-cart me-2"></i>Purchase Feature
+              </button>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="row">
+          <div class="col-12">
+            <div class="subscription-section">
+              <h3>Want All Features?</h3>
+              <p class="mb-4">
+                Consider subscribing to one of our plans for better value
+              </p>
+              <a
+                href="{% url 'payments:pricing' %}"
+                class="btn btn-outline-primary"
+              >
+                <i class="fas fa-star me-2"></i>View Subscription Plans
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div
+    class="modal fade"
+    id="paymentModal"
+    tabindex="-1"
+    aria-labelledby="paymentModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paymentModalLabel">Purchase Feature</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div id="feature-info" class="mb-3"></div>
+          <form id="payment-form">
+            <div id="card-element">
+              <!-- Stripe Elements will create form elements here -->
+            </div>
+            <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" id="submit-payment">
+            Purchase Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %} {% block extra_scripts %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Initialize Stripe
+      const stripe = Stripe("{{ stripe_publishable_key }}");
+      const elements = stripe.elements();
+
+      // Create card element
+      const cardElement = elements.create("card");
+      cardElement.mount("#card-element");
+
+      let currentPaymentIntent = null;
+      let selectedFeature = null;
+
+      // Handle purchase button clicks
+      document.querySelectorAll(".purchase-btn").forEach((button) => {
+        button.addEventListener("click", function () {
+          selectedFeature = {
+            type: this.dataset.feature,
+            name: this.dataset.name,
+            price: parseFloat(this.dataset.price),
+          };
+
+          // Update modal content
+          document.getElementById("feature-info").innerHTML = `
+              <h6>${selectedFeature.name}</h6>
+              <p class="text-muted">Price: $${selectedFeature.price}</p>
+          `;
+
+          // Create payment intent
+          createPaymentIntent(selectedFeature.price, "premium_feature");
+        });
+      });
+
+      function createPaymentIntent(amount, paymentType) {
+        fetch('{% url "payments:create_payment_intent" %}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({
+            amount: amount,
+            payment_type: paymentType,
+            description: `Premium Feature: ${selectedFeature.name}`,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.error) {
+              alert("Error: " + data.error);
+            } else {
+              currentPaymentIntent = data.client_secret;
+              const modal = new bootstrap.Modal(
+                document.getElementById("paymentModal")
+              );
+              modal.show();
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+          });
+      }
+
+      // Handle payment submission
+      document
+        .getElementById("submit-payment")
+        .addEventListener("click", function () {
+          if (!currentPaymentIntent) return;
+
+          stripe
+            .confirmCardPayment(currentPaymentIntent, {
+              payment_method: {
+                card: cardElement,
+              },
+            })
+            .then(function (result) {
+              if (result.error) {
+                document.getElementById("card-errors").textContent =
+                  result.error.message;
+              } else {
+                // Redirect to success page with feature type
+                window.location.href =
+                  '{% url "payments:success" %}?payment_intent=' +
+                  result.paymentIntent.id +
+                  "&feature_type=" +
+                  selectedFeature.type;
+              }
+            });
+        });
+
+      // Helper function to get CSRF token
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+    });
+  </script>
+  {% endblock %}
+</div>

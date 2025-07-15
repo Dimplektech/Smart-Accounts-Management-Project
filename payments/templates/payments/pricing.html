@@ -1,0 +1,762 @@
+{% extends 'accounts/base.html' %} 
+{% load static %}
+{% block title %}Pricing Plans - Smart Account Management{% endblock %}
+{% block main_class %}{% endblock%}
+{% block extra_head %}
+    <script src="https://js.stripe.com/v3/"></script>
+{% endblock %}
+{% block extra_css %}
+<style>
+  /* Strong overrides for this page */
+  html,
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background-color: transparent !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Override main container styles */
+  body > main,
+  main.container-fluid,
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    max-width: none !important;
+  }
+
+  /* Ensure navbar doesn't interfere */
+  .navbar {
+    position: relative !important;
+    z-index: 1000 !important;
+  }
+
+  .pricing-page-wrapper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    min-height: 100vh !important;
+    padding: 2rem 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .pricing-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 3rem 2rem;
+    margin: 0 auto;
+    max-width: 1200px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Reset any potential conflicts */
+  .pricing-page-wrapper * {
+    box-sizing: border-box;
+  }
+
+  .pricing-page-wrapper .container {
+    max-width: 1200px;
+  }
+
+  .pricing-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .pricing-subtitle {
+    color: #6c757d;
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+  }
+
+  .pricing-card {
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .pricing-card:hover {
+    transform: translateY(-20px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+  }
+
+  .pricing-card.featured {
+    transform: scale(1.05);
+    border: 3px solid #28a745;
+    box-shadow: 0 15px 40px rgba(40, 167, 69, 0.3);
+  }
+
+  .pricing-card.featured:hover {
+    transform: translateY(-20px) scale(1.07);
+  }
+
+  .card-header {
+    position: relative;
+    padding: 2rem 1rem 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    overflow: hidden;
+  }
+
+  .card-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+
+  .pricing-card:hover .card-header::before {
+    transform: translateX(100%);
+  }
+
+  .plan-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #28a745;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transform: rotate(15deg);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+  }
+
+  .price-highlight {
+    font-size: 2.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 1.5rem 0;
+    position: relative;
+  }
+
+  .price-period {
+    font-size: 1rem;
+    color: #6c757d;
+    font-weight: 400;
+  }
+
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+  }
+
+  .feature-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f8f9fa;
+    position: relative;
+    opacity: 1; /* Start visible, animate on scroll */
+    transform: translateX(0);
+    transition: all 0.3s ease;
+  }
+
+  .feature-list li:before {
+    content: "✓";
+    color: #28a745;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 15px;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+  }
+
+  .subscribe-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .subscribe-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  }
+
+  .subscribe-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  .subscribe-btn:hover::before {
+    left: 100%;
+  }
+
+  .premium-features-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-top: 3rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+
+  .features-title {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .features-btn {
+    background: transparent;
+    border: 2px solid #667eea;
+    color: #667eea;
+    border-radius: 50px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .features-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  }
+
+  .test-payment-info {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    border-left: 5px solid #fd7e14;
+  }
+
+  .test-payment-info strong {
+    color: #fd7e14;
+  }
+
+  @keyframes slideInLeft {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Modal improvements */
+  .modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 768px) {
+    .pricing-container {
+      margin: 1rem;
+      padding: 2rem 1rem;
+    }
+
+    .price-highlight {
+      font-size: 2.5rem;
+    }
+
+    .pricing-card.featured {
+      transform: none;
+      margin-top: 1rem;
+    }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="pricing-page-wrapper">
+  <div class="container">
+    <div class="pricing-container">
+      <div class="row">
+        <div class="col-12 text-center">
+          <h3 class="display-4 pricing-header">Choose Your Perfect Plan</h3>
+          <p class="pricing-subtitle">
+            Unlock advanced features for smarter expense management
+          </p>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        {% for plan in plans %}
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div
+            class="card pricing-card h-100 {% if plan.name == 'Premium' %}featured{% endif %}"
+          >
+            {% if plan.name == 'Premium' %}
+            <div class="featured-badge">Most Popular</div>
+            {% endif %}
+
+            <div class="card-header text-center text-white">
+              <h4 class="plan-name">{{ plan.name }}</h4>
+            </div>
+
+            <div class="card-body text-center">
+              <div class="price-highlight">
+                {% if plan.price == 0 %} FREE {% else %} ${{ plan.price }}
+                <span class="price-period">/lifetime</span>
+                {% endif %}
+              </div>
+
+              <ul class="feature-list">
+                {% for feature in plan.features %}
+                <li>{{ feature }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <div class="card-footer text-center bg-transparent border-0">
+              <button
+                class="btn subscribe-btn btn-lg w-100"
+                data-plan="{{ plan.name|lower }}"
+                data-price="{{ plan.price }}"
+                data-stripe-price-id="{{ plan.stripe_price_id }}"
+              >
+                {% if plan.price == 0 %} Get Started Free {% else %}
+                 Choose Premium
+                {% endif %}
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <div class="premium-features-section">
+            <h3 class="features-title">Need Individual Features?</h3>
+            <p class="mb-4">
+              Purchase premium features individually to customize your
+              experience
+            </p>
+            <a
+              href="{% url 'payments:premium_features' %}"
+              class="btn features-btn"
+            >
+              <i class="fas fa-star me-2"></i>View Premium Features
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <div class="test-payment-info">
+            <p class="mb-0 text-center">
+              <strong
+                ><i class="fas fa-credit-card me-2"></i>Test Payment:</strong
+              >
+              Use card number <code>4242 4242 4242 4242</code> with any future
+              expiry date and any CVC
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div
+  class="modal fade"
+  id="paymentModal"
+  tabindex="-1"
+  aria-labelledby="paymentModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paymentModalLabel">
+          <i class="fas fa-credit-card me-2"></i>Complete Your Payment
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body p-4">
+        <div id="payment-info" class="mb-4 text-center">
+          <h6 id="upgrade-title" class="fw-bold"></h6>
+          <p class="text-muted mb-0" id="upgrade-price"></p>
+        </div>
+
+        <form id="payment-form">
+          <div class="mb-3">
+            <label for="card-number" class="form-label fw-semibold">
+              <i class="fas fa-credit-card me-1"></i>Card Number
+            </label>
+            <div
+              id="card-number"
+              class="form-control"
+              style="height: 45px; padding: 12px; border-radius: 10px"
+            >
+              <!-- Stripe Elements will create form elements here -->
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="card-expiry" class="form-label fw-semibold">
+                <i class="fas fa-calendar me-1"></i>Expiry Date
+              </label>
+              <div
+                id="card-expiry"
+                class="form-control"
+                style="height: 45px; padding: 12px; border-radius: 10px"
+              >
+                <!-- Stripe Elements will create form elements here -->
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="card-cvc" class="form-label fw-semibold">
+                <i class="fas fa-lock me-1"></i>CVC
+              </label>
+              <div
+                id="card-cvc"
+                class="form-control"
+                style="height: 45px; padding: 12px; border-radius: 10px"
+              >
+                <!-- Stripe Elements will create form elements here -->
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="postal-code" class="form-label fw-semibold">
+              <i class="fas fa-map-marker-alt me-1"></i>Postal Code / ZIP Code
+            </label>
+            <input
+              type="text"
+              id="postal-code"
+              class="form-control"
+              style="height: 45px; border-radius: 10px"
+              placeholder="Enter your postal code or ZIP code"
+              required
+            />
+          </div>
+
+          <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+        </form>
+
+        <div id="free-plan-message" class="text-center" style="display: none">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            You're already using the free plan. Upgrade to Premium for advanced
+            features!
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button
+          type="button"
+          class="btn btn-outline-secondary px-4"
+          data-bs-dismiss="modal"
+        >
+          <i class="fas fa-times me-1"></i>Cancel
+        </button>
+        <button
+          type="button"
+          class="btn subscribe-btn px-4"
+          id="submit-payment"
+        >
+          <i class="fas fa-check me-1"></i>Pay Now
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize Stripe
+    const stripe = Stripe("{{ stripe_publishable_key }}");
+    const elements = stripe.elements();
+
+    // Create individual card elements with improved styling
+    const elementStyle = {
+      base: {
+        fontSize: "16px",
+        color: "#424770",
+        fontFamily: '"Inter", sans-serif',
+        "::placeholder": {
+          color: "#aab7c4",
+        },
+      },
+    };
+
+    const cardNumberElement = elements.create("cardNumber", {
+      style: elementStyle,
+    });
+    cardNumberElement.mount("#card-number");
+
+    const cardExpiryElement = elements.create("cardExpiry", {
+      style: elementStyle,
+    });
+    cardExpiryElement.mount("#card-expiry");
+
+    const cardCvcElement = elements.create("cardCvc", { style: elementStyle });
+    cardCvcElement.mount("#card-cvc");
+
+    // Handle real-time validation errors
+    cardNumberElement.on("change", ({ error }) => {
+      const displayError = document.getElementById("card-errors");
+      if (error) {
+        displayError.textContent = error.message;
+      } else {
+        displayError.textContent = "";
+      }
+    });
+
+    let currentPaymentIntent = null;
+    let selectedPlan = null;
+
+    // Handle subscription button clicks
+    document.querySelectorAll(".subscribe-btn").forEach((button) => {
+      button.addEventListener("click", function () {
+        const planPrice = parseFloat(this.dataset.price);
+
+        // Handle free plan
+        if (planPrice === 0) {
+          // Show free plan message
+          document.getElementById("upgrade-title").textContent = "Free Plan";
+          document.getElementById("upgrade-price").textContent =
+            "You're currently on the free plan";
+          document.getElementById("payment-form").style.display = "none";
+          document.getElementById("free-plan-message").style.display = "block";
+          document.getElementById("submit-payment").style.display = "none";
+
+          const modal = new bootstrap.Modal(
+            document.getElementById("paymentModal")
+          );
+          modal.show();
+          return;
+        }
+
+        selectedPlan = {
+          name: this.dataset.plan,
+          price: planPrice,
+          stripePriceId: this.dataset.stripePriceId,
+        };
+
+        // Show payment form for premium plan
+        document.getElementById("payment-form").style.display = "block";
+        document.getElementById("free-plan-message").style.display = "none";
+        document.getElementById("submit-payment").style.display =
+          "inline-block";
+
+        // Update modal content
+        document.getElementById("upgrade-title").textContent = `${
+          selectedPlan.name.charAt(0).toUpperCase() + selectedPlan.name.slice(1)
+        } Plan Upgrade`;
+        document.getElementById(
+          "upgrade-price"
+        ).textContent = `One-time payment: $${selectedPlan.price}`;
+
+        // Create payment intent
+        createPaymentIntent(selectedPlan.price, "premium_upgrade");
+      });
+    });
+
+    function createPaymentIntent(amount, paymentType) {
+      // Show loading state
+      const submitButton = document.getElementById("submit-payment");
+      const originalText = submitButton.innerHTML;
+      submitButton.innerHTML =
+        '<i class="fas fa-spinner fa-spin me-1"></i>Processing...';
+      submitButton.disabled = true;
+
+      fetch('{% url "payments:create_payment_intent" %}', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({
+          amount: amount,
+          payment_type: paymentType,
+          description: `${
+            selectedPlan.name.charAt(0).toUpperCase() +
+            selectedPlan.name.slice(1)
+          } Plan - Premium Upgrade`,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // Reset button
+          submitButton.innerHTML = originalText;
+          submitButton.disabled = false;
+
+          console.log("Payment intent response:", data); // Debug log
+
+          if (data.error) {
+            console.error("Payment intent error:", data.error); // Debug log
+            alert("Error: " + data.error);
+          } else {
+            currentPaymentIntent = data.client_secret;
+            console.log("Payment intent created:", currentPaymentIntent); // Debug log
+            const modal = new bootstrap.Modal(
+              document.getElementById("paymentModal")
+            );
+            modal.show();
+          }
+        })
+        .catch((error) => {
+          // Reset button
+          submitButton.innerHTML = originalText;
+          submitButton.disabled = false;
+          console.error("Error:", error);
+          alert("An error occurred. Please try again.");
+        });
+    }
+
+    // Handle payment submission
+    document
+      .getElementById("submit-payment")
+      .addEventListener("click", function () {
+        if (!currentPaymentIntent) return;
+
+        const postalCode = document.getElementById("postal-code").value;
+
+        if (!postalCode.trim()) {
+          document.getElementById("card-errors").textContent =
+            "Please enter your postal code or ZIP code.";
+          return;
+        }
+
+        // Show loading state
+        const submitButton = this;
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML =
+          '<i class="fas fa-spinner fa-spin me-1"></i>Processing Payment...';
+        submitButton.disabled = true;
+
+        stripe
+          .confirmCardPayment(currentPaymentIntent, {
+            payment_method: {
+              card: cardNumberElement,
+              billing_details: {
+                address: {
+                  postal_code: postalCode,
+                },
+              },
+            },
+          })
+          .then(function (result) {
+            if (result.error) {
+              // Reset button
+              submitButton.innerHTML = originalText;
+              submitButton.disabled = false;
+              document.getElementById("card-errors").textContent =
+                result.error.message;
+            } else {
+              // Redirect to success page
+              window.location.href =
+                '{% url "payments:success" %}?payment_intent=' +
+                result.paymentIntent.id;
+            }
+          });
+      });
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === name + "=") {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Add smooth scrolling for better UX
+    window.addEventListener("scroll", function () {
+      const cards = document.querySelectorAll(".pricing-card");
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+        if (isVisible) {
+          card.style.opacity = "1";
+          card.style.transform = "translateY(0)";
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

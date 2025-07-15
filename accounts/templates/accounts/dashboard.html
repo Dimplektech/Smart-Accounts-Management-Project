@@ -1,0 +1,332 @@
+<!-- accounts/templates/accounts/dashboard.html -->
+{% extends 'accounts/base.html' %} {% load static %} {% block title %}Dashboard
+- Smart Account Management{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}" />
+{% endblock %} {% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+      <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+    </li>
+  </ol>
+</nav>
+{% endblock %} {% block content %}
+<div class="dashboard-container">
+  <!-- Welcome Section -->
+  <div class="welcome-section mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="dashboard-title">
+          <span class="text-gradient"
+            >Welcome back, {{ user.first_name|default:user.username }}!</span
+          >
+        </h1>
+        <p class="dashboard-subtitle">
+          <i class="fas fa-calendar me-1"></i>
+          <span id="currentDateTime"></span>
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <div class="quick-actions">
+          <a
+            href="{% url 'accounts:add_transaction' %}"
+            class="btn btn-gradient-primary me-2"
+          >
+            <i class="fas fa-plus me-1"></i>Add Transaction
+          </a>
+          <a
+            href="{% url 'accounts:add_account' %}"
+            class="btn btn-outline-primary"
+          >
+            <i class="fas fa-university me-1"></i>Add Account
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards Row -->
+  <div class="stats-grid mb-4">
+    <div class="stat-card balance-card">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <i class="fas fa-wallet"></i>
+        </div>
+        <h6>Total Balance</h6>
+      </div>
+      <div class="stat-value" data-animate="balance">
+        ${{ total_balance|floatformat:2|default:"0.00" }}
+      </div>
+      <div class="stat-change positive">
+        <i class="fas fa-arrow-up me-1"></i>+2.5% this month
+      </div>
+    </div>
+
+    <div class="stat-card income-card">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <i class="fas fa-arrow-down"></i>
+        </div>
+        <h6>This Month Income</h6>
+      </div>
+      <div class="stat-value" data-animate="income">
+        ${{ monthly_income|floatformat:2|default:"0.00" }}
+      </div>
+      <div class="stat-change positive">
+        <i class="fas fa-arrow-up me-1"></i>+15.3% vs last month
+      </div>
+    </div>
+
+    <div class="stat-card expense-card">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <i class="fas fa-arrow-up"></i>
+        </div>
+        <h6>This Month Expenses</h6>
+      </div>
+      <div class="stat-value" data-animate="expenses">
+        ${{ monthly_expenses|floatformat:2|default:"0.00" }}
+      </div>
+      <div class="stat-change negative">
+        <i class="fas fa-arrow-up me-1"></i>+8.7% vs last month
+      </div>
+    </div>
+
+    <div class="stat-card transactions-card">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <i class="fas fa-exchange-alt"></i>
+        </div>
+        <h6>Total Transactions</h6>
+      </div>
+      <div class="stat-value" data-animate="transactions">
+        {{ total_transactions|default:"0" }}
+      </div>
+      <div class="stat-change neutral">
+        <i class="fas fa-minus me-1"></i>No change
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts and Tables Row -->
+  <div class="row">
+    <!-- Monthly Overview Chart -->
+    <div class="col-lg-8 mb-4">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h5><i class="fas fa-chart-line me-2"></i>Monthly Overview</h5>
+          <div class="chart-controls">
+            <button
+              class="btn btn-sm btn-outline-primary active"
+              data-period="6months"
+            >
+              6M
+            </button>
+            <button class="btn btn-sm btn-outline-primary" data-period="1year">
+              1Y
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <canvas id="monthlyChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accounts Summary -->
+    <div class="col-lg-4 mb-4">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h5><i class="fas fa-university me-2"></i>Accounts</h5>
+          <a
+            href="{% url 'accounts:account_list' %}"
+            class="btn btn-sm btn-link"
+            >View All</a
+          >
+        </div>
+        <div class="card-body p-0">
+          <div class="accounts-list">
+            {% for account in accounts %}
+            <div class="account-item">
+              <div class="account-info">
+                <div class="account-icon">
+                  {% if account.account_type.name == 'Checking' %}🏦
+                  {% elif account.account_type.name == 'Savings' %}💰
+                  {% elif account.account_type.name == 'Credit Card' %}💳
+                  {% elif account.account_type.name == 'Investment' %}📈
+                  {% else %}🏛️
+                  {% endif %}
+                </div>
+                <div class="account-details">
+                  <div class="account-name">{{ account.name }}</div>
+                  <div class="account-type">
+                    {{ account.get_account_type_display }}
+                  </div>
+                </div>
+              </div>
+              <div
+                class="account-balance {% if account.balance < 0 %}negative{% endif %}"
+              >
+                ${{ account.balance|floatformat:2 }}
+              </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+              <i class="fas fa-university fa-2x text-muted mb-2"></i>
+              <p class="text-muted">No accounts yet</p>
+              <a
+                href="{% url 'accounts:add_account' %}"
+                class="btn btn-sm btn-primary"
+                >Add First Account</a
+              >
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transactions and Category Breakdown -->
+  <div class="row">
+    <!-- Recent Transactions -->
+    <div class="col-lg-8 mb-4">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h5><i class="fas fa-history me-2"></i>Recent Transactions</h5>
+          <a
+            href="{% url 'accounts:transaction_list' %}"
+            class="btn btn-sm btn-link"
+            >View All</a
+          >
+        </div>
+        <div class="card-body p-0">
+          <div class="transactions-list">
+            {% for transaction in recent_transactions %}
+            <div class="transaction-item">
+              <div
+                class="transaction-icon transaction-{{ transaction.transaction_type }}"
+              >
+                {% if transaction.transaction_type == 'income' %}💰 {% elif transaction.transaction_type == 'expense' %}💸 {% else %}🔄{% endif %}
+              </div>
+              <div class="transaction-details">
+                <div class="transaction-description">
+                  {{ transaction.description }}
+                </div>
+                <div class="transaction-meta">
+                  <span class="transaction-category"
+                    >{{ transaction.category.name }}</span
+                  >
+                  <span class="transaction-date"
+                    >{{ transaction.date|date:"M d, Y" }}</span
+                  >
+                </div>
+              </div>
+              <div
+                class="transaction-amount transaction-{{ transaction.transaction_type }}"
+              >
+                {% if transaction.transaction_type == 'expense' %}-{% endif %}${{ transaction.amount|floatformat:2 }}
+              </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+              <i class="fas fa-receipt fa-2x text-muted mb-2"></i>
+              <p class="text-muted">No transactions yet</p>
+              <a
+                href="{% url 'accounts:add_transaction' %}"
+                class="btn btn-sm btn-primary"
+                >Add First Transaction</a
+              >
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="col-lg-4 mb-4">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h5><i class="fas fa-chart-pie me-2"></i>Top Categories</h5>
+          <select
+            class="form-select form-select-sm"
+            id="categoryPeriod"
+            style="max-width: 120px"
+          >
+            <option value="month">This Month</option>
+            <option value="quarter">Quarter</option>
+            <option value="year">Year</option>
+          </select>
+        </div>
+        <div class="card-body">
+          <canvas id="categoryChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budget Progress (if budgets exist) -->
+  {% if budgets %}
+  <div class="row">
+    <div class="col-12 mb-4">
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h5><i class="fas fa-bullseye me-2"></i>Budget Progress</h5>
+          <a href="#" class="btn btn-sm btn-link">Manage Budgets</a>
+        </div>
+        <div class="card-body">
+          <div class="budget-grid">
+            {% for budget in budgets %}
+            <div class="budget-item">
+              <div class="budget-header">
+                <h6>{{ budget.name }}</h6>
+                <span class="budget-period"
+                  >{{ budget.start_date|date:"M Y" }}</span
+                >
+              </div>
+              <div class="budget-progress">
+                <div class="progress">
+                  <div
+                    class="progress-bar {% if budget.percentage > 100 %}bg-danger{% elif budget.percentage > 80 %}bg-warning{% else %}bg-success{% endif %}"
+                    style="width: {{ budget.percentage|floatformat:0 }}%"
+                  ></div>
+                </div>
+                <div class="budget-details">
+                  <span class="spent">${{ budget.spent|floatformat:2 }}</span>
+                  <span class="total"
+                    >/ ${{ budget.amount|floatformat:2 }}</span
+                  >
+                  <span class="percentage"
+                    >{{ budget.percentage|floatformat:0 }}%</span
+                  >
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  // Debug: Log user and data
+  console.log('🔍 Dashboard data for user:', '{{ user.username }}');
+  console.log('🔍 Monthly data:', {{ monthly_data_json|safe }});
+  console.log('🔍 Category spending:', {{ category_spending_json|safe }});
+
+  // Pass Django data to JavaScript with user identification
+  window.dashboardData = {
+      user: '{{ user.username }}',
+      userId: {{ user.id }},
+      monthlyData: {{ monthly_data_json|safe }},
+      categorySpending: {{ category_spending_json|safe }},
+      accountDistribution: {{ account_distribution_json|safe }},
+      timestamp: new Date().getTime() // Prevent caching
+  };
+</script>
+<script src="{% static 'accounts/js/dashboard.js' %}?v={{ user.id }}-{{ current_month }}"></script>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Receipt Detail - Smart Account Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-receipt me-2"></i>Receipt Detail</h2>
+                <a href="{% url 'scanner:receipt_history' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to History
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Receipt Image -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-image me-2"></i>Receipt Image</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if receipt.image %}
+                        <img src="{{ receipt.image.url }}" alt="Receipt" class="img-fluid" style="max-height: 500px; border: 1px solid #ddd;">
+                    {% else %}
+                        <p class="text-muted">No image available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Receipt Details -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Extracted Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if receipt.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif receipt.status == 'processing' %}
+                                    <span class="badge bg-warning">Processing</span>
+                                {% elif receipt.status == 'failed' %}
+                                    <span class="badge bg-danger">Failed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Merchant:</th>
+                            <td>{{ receipt.merchant_name|default:"Not detected" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date:</th>
+                            <td>{{ receipt.date|default:"Not detected" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Amount:</th>
+                            <td>
+                                {% if receipt.total_amount %}
+                                    <strong>£{{ receipt.total_amount }}</strong>
+                                {% else %}
+                                    Not detected
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Tax Amount:</th>
+                            <td>
+                                {% if receipt.tax_amount %}
+                                    £{{ receipt.tax_amount }}
+                                {% else %}
+                                    Not detected
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Scanned:</th>
+                            <td>{{ receipt.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                    </table>
+
+                    {% if receipt.status == 'completed' and receipt.total_amount %}
+                        <div class="text-center mt-4">
+                            <a href="{% url 'scanner:create_transaction_from_receipt' receipt.id %}" 
+                               class="btn btn-success btn-lg">
+                                <i class="fas fa-plus me-2"></i>Create Transaction
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Receipt Items -->
+            {% if items %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-list me-2"></i>Items ({{ items.count }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>£{{ item.price }}</td>
+                                    <td>£{{ item.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Raw OCR Text -->
+            {% if receipt.raw_text %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt me-2"></i>Raw OCR Text</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="small" style="max-height: 200px; overflow-y: auto;">{{ receipt.raw_text }}</pre>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

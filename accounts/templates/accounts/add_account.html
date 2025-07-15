@@ -1,0 +1,222 @@
+<!-- accounts/templates/accounts/add_account.html -->
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Add New Account - Smart Account Management{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/add_account.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="account-form-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="account-card">
+                    <!-- Header -->
+                    <div class="account-header">
+                        <div class="account-header-content">
+                            <div class="account-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="account-header-text">
+                                <h2 class="account-title">Add New Account</h2>
+                                <p class="account-subtitle">Create a new account to track your finances</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="account-body">
+                        <!-- Messages -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-account alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Form -->
+                        <form method="post" id="accountForm" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <!-- Account Name -->
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="{{ form.name.id_for_label }}" class="form-label">
+                                            <i class="fas fa-tag me-1"></i>{{ form.name.label }}
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.name }}
+                                        {% if form.name.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in form.name.errors %}
+                                                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        {% if form.name.help_text %}
+                                            <div class="form-hint">
+                                                <i class="fas fa-info-circle me-1"></i>{{ form.name.help_text }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Account Type -->
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="{{ form.account_type.id_for_label }}" class="form-label">
+                                            <i class="fas fa-list me-1"></i>{{ form.account_type.label }}
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.account_type }}
+                                        {% if form.account_type.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in form.account_type.errors %}
+                                                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="account-type-description" id="typeDescription">
+                                            <i class="fas fa-lightbulb me-1"></i>
+                                            <span>Select the type of account you want to create</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Account Number -->
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="{{ form.account_number.id_for_label }}" class="form-label">
+                                            <i class="fas fa-hashtag me-1"></i>{{ form.account_number.label }}
+                                            <span class="text-muted">(Optional)</span>
+                                        </label>
+                                        {{ form.account_number }}
+                                        {% if form.account_number.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in form.account_number.errors %}
+                                                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        {% if form.account_number.help_text %}
+                                            <div class="form-hint">
+                                                <i class="fas fa-info-circle me-1"></i>{{ form.account_number.help_text }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Initial Balance -->
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="{{ form.initial_balance.id_for_label }}" class="form-label">
+                                            <i class="fas fa-dollar-sign me-1"></i>{{ form.initial_balance.label }}
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="balance-input-group">
+                                            <div class="input-group">
+                                                <span class="input-group-text balance-currency">£</span>
+                                                {{ form.initial_balance }}
+                                                <div class="balance-indicator" id="balanceIndicator">💰</div>
+                                            </div>
+                                        </div>
+                                        {% if form.initial_balance.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in form.initial_balance.errors %}
+                                                    <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        {% if form.initial_balance.help_text %}
+                                            <div class="form-hint">
+                                                <i class="fas fa-info-circle me-1"></i>{{ form.initial_balance.help_text }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bank Name -->
+                            <div class="form-group mb-4">
+                                <label for="{{ form.bank_name.id_for_label }}" class="form-label">
+                                    <i class="fas fa-university me-1"></i>{{ form.bank_name.label }}
+                                    <span class="text-muted">(Optional)</span>
+                                </label>
+                                {{ form.bank_name }}
+                                {% if form.bank_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.bank_name.errors %}
+                                            <div><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.bank_name.help_text %}
+                                    <div class="form-hint">
+                                        <i class="fas fa-info-circle me-1"></i>{{ form.bank_name.help_text }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <div class="d-flex gap-3 justify-content-between">
+                                    <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary-account">
+                                        <i class="fas fa-arrow-left me-1"></i>Cancel
+                                    </a>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-account" onclick="resetAccountForm()">
+                                            <i class="fas fa-undo me-1"></i>Reset
+                                        </button>
+                                        <button type="submit" class="btn btn-primary-account" id="submitButton">
+                                            <i class="fas fa-save me-1"></i>Create Account
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Summary -->
+                            <div class="form-summary mt-4" id="formSummary" style="display: none;">
+                                <div class="summary-card">
+                                    <h6><i class="fas fa-eye me-1"></i>Preview</h6>
+                                    <div class="summary-content">
+                                        <div class="summary-item">
+                                            <span class="summary-label">Account Name:</span>
+                                            <span class="summary-value" id="summaryName">-</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-label">Account Type:</span>
+                                            <span class="summary-value" id="summaryType">-</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-label">Initial Balance:</span>
+                                            <span class="summary-value" id="summaryBalance">£0.00</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="summary-label">Bank:</span>
+                                            <span class="summary-value" id="summaryBank">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/add_account.js' %}"></script>
+
+
+{% endblock %}

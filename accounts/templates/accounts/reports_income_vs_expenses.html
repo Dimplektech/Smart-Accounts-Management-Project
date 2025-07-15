@@ -1,0 +1,42 @@
+<div class="card mb-4">
+  <div class="card-header">
+    <i class="fas fa-chart-line me-2"></i>Income vs Expenses
+  </div>
+  <div class="card-body">
+    <!-- Your chart and summary for income vs expenses here -->
+    <p class="text-muted">This report compares your total income against your total expenses over a selected period.</p>
+    <div class="mb-3">
+      <label for="reportPeriod" class="form-label">Select Period:</label>
+      <select id="reportPeriod" class="form-select">
+        <option value="last_month">Last Month</option>
+        <option value="last_3_months">Last 3 Months</option>
+        <option value="last_6_months">Last 6 Months</option>
+        <option value="last_year">Last Year</option>
+      </select>
+    
+    </div>
+    <div class="mb-3">
+      <label for="incomeAmount" class="form-label">Total Income:</label>
+      <input type="text" id="incomeAmount" class="form-control" value="{{ total_income }}" readonly>
+    </div>
+    <div class="mb-3">
+      <label for="expensesAmount" class="form-label">Total Expenses:</label>
+      <input type="text" id="expensesAmount" class="form-control" value="{{ total_expenses }}" readonly>
+    </div>
+    <div class="mb-3">
+      <label for="netAmount" class="form-label">Net Amount:</label>
+      <input type="text" id="netAmount" class="form-control" value="{{ net_amount }}" readonly>
+    </div>
+    <div class="mb-3">
+      <label for="incomeVsExpensesChart" class="form-label">Income vs Expenses Chart:</label>
+    </div>  
+
+    <canvas id="incomeVsExpensesChart"></canvas>
+  </div>
+</div>
+<script id="income-expenses-data" type="application/json">
+  {
+    "income": {{ total_income|default:0 }},
+    "expenses": {{ total_expenses|default:0 }}
+  }
+</script>

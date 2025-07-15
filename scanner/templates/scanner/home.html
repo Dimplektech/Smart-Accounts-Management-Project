@@ -1,0 +1,88 @@
+{% extends 'scanner/base.html' %}
+{% block title %}Receipt Scanner - Home{%endblock %} {% block content %}
+<section class="hero-section text-center">
+  <div class="container">
+    <h1 class="display-4 mb-4">
+      <i class="fas fa-receipt"></i> Receipt Scanner
+    </h1>
+    <p class="lead mb-4">
+      Easily scan and digitize your receipts using advanced OCR technology.
+      Convert paper receipts to structured data in JSON or CSV format.
+    </p>
+    <a href="{% url 'scanner:upload' %}" class="btn btn-light btn-lg">
+      <i class="fas fa-upload"></i> Upload Your First Receipt
+    </a>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center p-4">
+          <div class="card-body">
+            <i class="fas fa-camera feature-icon mb-3"></i>
+            <h5 class="card-title">Scan Receipts</h5>
+            <p class="card-text">
+              Upload receipt images and let our OCR technology extract all the
+              important information automatically.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center p-4">
+          <div class="card-body">
+            <i class="fas fa-database feature-icon mb-3"></i>
+            <h5 class="card-title">Structured Data</h5>
+            <p class="card-text">
+              Extract merchant names, amounts, dates, tax information, and
+              individual items into structured data.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center p-4">
+          <div class="card-body">
+            <i class="fas fa-download feature-icon mb-3"></i>
+            <h5 class="card-title">Export Data</h5>
+            <p class="card-text">
+              Download your receipt data in JSON or CSV format for easy
+              integration with accounting software.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-light py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h2 class="mb-4">How It Works</h2>
+        <div class="mb-3">
+          <h5><i class="fas fa-upload text-primary"></i> 1. Upload</h5>
+          <p>Upload a clear image of your receipt (JPG, PNG, etc.)</p>
+        </div>
+        <div class="mb-3">
+          <h5><i class="fas fa-cogs text-primary"></i> 2. Process</h5>
+          <p>Our OCR engine extracts text and identifies key information</p>
+        </div>
+        <div class="mb-3">
+          <h5><i class="fas fa-download text-primary"></i> 3. Download</h5>
+          <p>Get your structured data in JSON or CSV format</p>
+        </div>
+      </div>
+      <div class="col-lg-6 text-center">
+        <i
+          class="fas fa-receipt"
+          style="font-size: 10rem; color: #667eea; opacity: 0.3"
+        ></i>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

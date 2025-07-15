@@ -1,0 +1,32 @@
+<!-- accounts/templates/accounts/reports.html -->
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Reports & Analytics - Smart Account Management{% endblock %}
+
+
+{% block content %}
+  {% if report_type == "income_vs_expenses" %}
+    {% include "accounts/reports_income_vs_expenses.html" %}
+  {% elif report_type == "monthly" %}
+    {% include "accounts/reports_monthly.html" %}
+  {% elif report_type == "category_breakdown" %}
+    {% include "accounts/reports_category_breakdown.html" %}
+  {% else %}
+    <div class="alert alert-info mt-4">Please select a report from the menu.</div>
+  {% endif %}
+{% endblock %}
+
+
+<script id="category-data" type="application/json">
+{
+    "labels": [{% for cat in category_breakdown %}"{{ cat.category__name }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+    "data": [{% for cat in category_breakdown %}{{ cat.total }}{% if not forloop.last %},{% endif %}{% endfor %}]
+}
+</script>
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'accounts/js/reports.js' %}"></script>
+{% endblock %}

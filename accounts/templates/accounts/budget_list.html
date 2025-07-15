@@ -1,0 +1,161 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Budgets - Smart Account Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-primary">
+                <i class="fas fa-target me-2"></i>My Budgets
+            </h2>
+            <p class="text-muted">Track your spending goals and stay within budget</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'accounts:add_budget' %}" class="btn btn-warning">
+                <i class="fas fa-plus me-1"></i>Add Budget
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">Total Budgets</h6>
+                            <h3 class="text-primary mb-0">{{ total_budgets }}</h3>
+                        </div>
+                        <div class="summary-icon bg-primary">
+                            <i class="fas fa-list"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">Active Budgets</h6>
+                            <h3 class="text-success mb-0">{{ active_budgets }}</h3>
+                        </div>
+                        <div class="summary-icon bg-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted mb-1">Over Budget</h6>
+                            <h3 class="text-danger mb-0">{{ over_budget_count }}</h3>
+                        </div>
+                        <div class="summary-icon bg-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budgets Cards -->
+    <div class="row">
+        {% for budget in budgets %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card budget-card {% if budget.is_over_budget %}border-danger{% endif %}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ budget.name }}</h5>
+                    <div class="budget-status">
+                        {% if budget.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                        {% if budget.is_over_budget %}
+                            <span class="badge bg-danger">Over Budget</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="budget-info mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Category:</span>
+                            <span class="badge bg-info">{{ budget.category.name }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Period:</span>
+                            <span>{{ budget.get_period_display }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Duration:</span>
+                            <span>{{ budget.start_date|date:"M d" }} - {{ budget.end_date|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="budget-progress">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Spent:</span>
+                            <span class="{% if budget.is_over_budget %}text-danger{% else %}text-success{% endif %}">
+                                ${{ budget.spent_amount|floatformat:2 }} / ${{ budget.amount|floatformat:2 }}
+                            </span>
+                        </div>
+                        
+                        <div class="progress mb-2">
+                            <div class="progress-bar {% if budget.is_over_budget %}bg-danger{% else %}bg-success{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {% if budget.percentage_used > 100 %}100{% else %}{{ budget.percentage_used }}{% endif %}%"
+                                 aria-valuenow="{{ budget.percentage_used }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ budget.percentage_used|floatformat:1 }}%
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Remaining:</span>
+                            <span class="{% if budget.remaining_amount < 0 %}text-danger{% else %}text-success{% endif %}">
+                                ${{ budget.remaining_amount|floatformat:2 }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100">
+                        <button class="btn btn-outline-warning btn-sm" title="Edit">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" title="Delete">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-target fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No budgets created yet</h4>
+                <p class="text-muted">Create your first budget to start tracking your spending goals</p>
+                <a href="{% url 'accounts:add_budget' %}" class="btn btn-warning">
+                    <i class="fas fa-plus me-1"></i>Create Your First Budget
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

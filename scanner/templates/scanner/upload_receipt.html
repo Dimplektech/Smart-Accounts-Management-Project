@@ -1,0 +1,109 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Upload Receipt - Smart Account Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-camera me-2"></i>Scan Receipt</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="receipt_image" class="form-label">
+                                <i class="fas fa-image me-2"></i>Select Receipt Image
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="receipt_image" 
+                                   name="receipt_image" 
+                                   accept="image/*" 
+                                   required>
+                            <div class="form-text">
+                                Supported formats: JPG, PNG, GIF. Max size: 10MB
+                            </div>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div class="mb-4" id="imagePreview" style="display: none;">
+                            <label class="form-label">Preview:</label>
+                            <div class="text-center">
+                                <img id="previewImg" src="" alt="Receipt Preview" class="img-fluid" style="max-height: 300px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Tips for better OCR results:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Ensure the receipt is well-lit and in focus</li>
+                                <li>Keep the receipt flat and straight</li>
+                                <li>Include the entire receipt in the image</li>
+                                <li>Avoid shadows and reflections</li>
+                            </ul>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="fas fa-camera me-2"></i>Process Receipt
+                            </button>
+                            <a href="{% url 'scanner:scanner_home' %}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Processing indicator -->
+                    <div id="processingIndicator" style="display: none;" class="text-center mt-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <p class="mt-2">Processing receipt with OCR... Please wait.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('receipt_image');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const uploadForm = document.getElementById('uploadForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const processingIndicator = document.getElementById('processingIndicator');
+
+    // Image preview functionality
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.style.display = 'none';
+        }
+    });
+
+    // Form submission with processing indicator
+    uploadForm.addEventListener('submit', function(e) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        processingIndicator.style.display = 'block';
+    });
+});
+</script>
+{% endblock %}
