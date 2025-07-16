@@ -17,6 +17,7 @@ import dj_database_url
 from google.oauth2 import service_account
 import json
 import storages
+import sys
 
 print(storages.__file__)
 
@@ -180,6 +181,11 @@ if GOOGLE_CREDENTIALS_JSON:
     )
 else:
     GS_CREDENTIALS = None  # Or handle error/raise exception
+
+
+print("DEBUG: DEFAULT_FILE_STORAGE =", DEFAULT_FILE_STORAGE, file=sys.stderr)
+print("DEBUG: GS_BUCKET_NAME =", GS_BUCKET_NAME, file=sys.stderr)
+print("DEBUG: GOOGLE_CREDENTIALS_JSON is set:", bool(GOOGLE_CREDENTIALS_JSON), file=sys.stderr)
 
 # Set MEDIA_URL to GCS bucket URL for all media files
 MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
