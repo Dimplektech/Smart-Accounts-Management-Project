@@ -187,5 +187,8 @@ print("DEBUG: DEFAULT_FILE_STORAGE =", DEFAULT_FILE_STORAGE, file=sys.stderr)
 print("DEBUG: GS_BUCKET_NAME =", GS_BUCKET_NAME, file=sys.stderr)
 print("DEBUG: GOOGLE_CREDENTIALS_JSON is set:", bool(GOOGLE_CREDENTIALS_JSON), file=sys.stderr)
 
-# Set MEDIA_URL to GCS bucket URL for all media files
-MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+if DEBUG:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
