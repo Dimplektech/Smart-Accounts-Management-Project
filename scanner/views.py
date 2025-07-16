@@ -79,8 +79,24 @@ def upload_receipt(request):
                                 receipt.date = None
 
                         receipt.tax_amount = result.get("tax_amount")
+
                         receipt.status = "completed"
                         receipt.save()
+                        # Extra debug logging to confirm GCS upload
+                        logging.error(
+                            f"POST-SAVE DEBUG: Receipt image url: {receipt.image.url}"
+                        )
+                        logging.error(
+                            f"POST-SAVE DEBUG: Receipt image name: {receipt.image.name}"
+                        )
+                        from django.conf import settings
+
+                        logging.error(
+                            f"POST-SAVE DEBUG: DEFAULT_FILE_STORAGE: {getattr(settings, 'DEFAULT_FILE_STORAGE', None)}"
+                        )
+                        logging.error(
+                            f"POST-SAVE DEBUG: GS_BUCKET_NAME: {getattr(settings, 'GS_BUCKET_NAME', None)}"
+                        )
 
                         # Create receipt items
                         items = result.get("items", [])
