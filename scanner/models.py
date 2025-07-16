@@ -15,7 +15,7 @@ class Receipt(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    image = models.ImageField(storage=GoogleCloudStorage(), upload_to="receipts/")
+    image = models.ImageField(upload_to="receipts/")
     original_filename = models.CharField(max_length=255)
 
     # OCR Results
