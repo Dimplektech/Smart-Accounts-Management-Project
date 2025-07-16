@@ -1,4 +1,9 @@
+
 // accounts/static/accounts/js/dashboard.js
+
+// Chart.js instances for dashboard charts
+let monthlyChartInstance = null;
+let categoryChartInstance = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📊 Dashboard Loading...');
@@ -101,7 +106,6 @@ function initializeCharts() {
     initializeCategoryChart();
 }
 
-let monthlyChartInstance = null;
 function initializeMonthlyChart() {
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
@@ -262,7 +266,7 @@ function initializeMonthlyChart() {
     });
 }
 
-let categoryChartInstance = null;
+// ...existing code...
 function initializeCategoryChart() {
     const ctx = document.getElementById('categoryChart');
     if (!ctx) return;
