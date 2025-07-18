@@ -10,6 +10,8 @@ import re
 from decimal import Decimal
 from datetime import datetime
 import json
+import requests
+from io import BytesIO
 
 
 class ReceiptOCRService:
@@ -413,4 +415,15 @@ class ReceiptOCRService:
             return parsed_data
         except Exception as e:
             print(f"Error processing receipt: {str(e)}")
+            return None
+
+    def process_receipt_from_url(self, image_url):
+        """Download image from URL and process with OCR"""
+        try:
+            response = requests.get(image_url)
+            response.raise_for_status()
+            image_file = BytesIO(response.content)
+            return self.process_receipt(image_file)
+        except Exception as e:
+            print(f"Error downloading or processing receipt from URL: {e}")
             return None
