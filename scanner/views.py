@@ -127,6 +127,7 @@ def upload_receipt(request):
 
                 except Exception as ocr_error:
                     receipt.status = "failed"
+                    receipt.ocr_error = str(ocr_error)
                     receipt.save()
                     messages.warning(
                         request,
