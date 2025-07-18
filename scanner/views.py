@@ -50,8 +50,13 @@ def upload_receipt(request):
                     from .ocr_service import ReceiptOCRService
 
                     ocr_service = ReceiptOCRService()
-                    with receipt.image.open("rb") as f:
-                        result = ocr_service.process_receipt(f)
+                    # Use process_receipt_from_url if image is remote (GCS or other URL)
+                    image_url = getattr(receipt.image, "url", None)
+                    if image_url and image_url.startswith(("http://", "https://")):
+                        result = ocr_service.process_receipt_from_url(image_url)
+                    else:
+                        with receipt.image.open("rb") as f:
+                            result = ocr_service.process_receipt(f)
 
                     if result:
                         # Convert date object to string for JSON storage
