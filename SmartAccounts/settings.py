@@ -168,3 +168,5 @@ STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# NOTE: For Heroku, media files are stored in the ephemeral filesystem and will be lost on dyno restart.
+# For practice, keep DEBUG=True and Django will serve media files. For production, use S3 or a CDN for media files.
