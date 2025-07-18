@@ -16,24 +16,26 @@ class ReceiptOCRService:
     """Service class for OCR processing of receipts"""
 
     def __init__(self):
-        # Configure tesseract path for Windows
+        # Configure tesseract path for Windows and Heroku
         try:
-            # Try common installation paths
             import platform
+            import os
 
             if platform.system() == "Windows":
-                import os
-
                 possible_paths = [
                     r"C:\Program Files\Tesseract-OCR\tesseract.exe",
                     r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
                     r"C:\Tesseract-OCR\tesseract.exe",
                 ]
-
                 for path in possible_paths:
                     if os.path.exists(path):
                         pytesseract.pytesseract.tesseract_cmd = path
                         break
+            else:
+                # On Heroku, use the apt buildpack path
+                heroku_path = "/app/.apt/usr/bin/tesseract"
+                if os.path.exists(heroku_path):
+                    pytesseract.pytesseract.tesseract_cmd = heroku_path
         except Exception as e:
             print(f"Warning: Could not configure Tesseract path: {e}")
             print("Please ensure Tesseract is installed and accessible")
