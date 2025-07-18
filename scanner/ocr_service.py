@@ -374,26 +374,3 @@ class ReceiptOCRService:
                     continue
 
         return items
-
-    def process_receipt(self, image_file):
-        """Complete pipeline to process a receipt image (file-like object)"""
-        try:
-            raw_text = self.extract_text(image_file)
-            if not raw_text:
-                return None
-            parsed_data = self.parse_receipt_data(raw_text)
-            return parsed_data
-        except Exception as e:
-            print(f"Error processing receipt: {str(e)}")
-            return None
-
-    def process_receipt_from_url(self, image_url):
-        """Download image from URL and process with OCR"""
-        try:
-            response = requests.get(image_url)
-            response.raise_for_status()
-            image_file = BytesIO(response.content)
-            return self.process_receipt(image_file)
-        except Exception as e:
-            print(f"Error downloading or processing receipt from URL: {e}")
-            return None
