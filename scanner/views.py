@@ -51,12 +51,9 @@ def upload_receipt(request):
 
                     ocr_service = ReceiptOCRService()
                     # Use process_receipt_from_url if image is remote (GCS or other URL)
-                    image_url = getattr(receipt.image, "url", None)
-                    if image_url and image_url.startswith(("http://", "https://")):
-                        result = ocr_service.process_receipt_from_url(image_url)
-                    else:
-                        with receipt.image.open("rb") as f:
-                            result = ocr_service.process_receipt(f)
+                    # Always use the file object for OCR to avoid S3 permission issues
+                    with receipt.image.open("rb") as f:
+                        result = ocr_service.process_receipt(f)
 
                     if result:
                         # Convert date object to string for JSON storage
