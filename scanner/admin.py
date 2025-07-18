@@ -13,10 +13,17 @@ class ReceiptAdmin(admin.ModelAdmin):
         "date",
         "status",
         "created_at",
+        "ocr_error",
     ]
     list_filter = ["status", "created_at", "date"]
     search_fields = ["merchant_name", "original_filename"]
-    readonly_fields = ["created_at", "updated_at", "raw_text", "parsed_data"]
+    readonly_fields = [
+        "created_at",
+        "updated_at",
+        "raw_text",
+        "parsed_data",
+        "ocr_error",
+    ]
 
     fieldsets = (
         (
@@ -29,7 +36,10 @@ class ReceiptAdmin(admin.ModelAdmin):
         ),
         (
             "OCR Results",
-            {"fields": ("raw_text", "parsed_data"), "classes": ("collapse",)},
+            {
+                "fields": ("raw_text", "parsed_data", "ocr_error"),
+                "classes": ("collapse",),
+            },
         ),
         (
             "Timestamps",
