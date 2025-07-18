@@ -1,6 +1,4 @@
-tesseract-ocr
-tesseract-ocr-eng
-libtesseract-dev
+ 
 libgl1
 libsm6
 libxext6

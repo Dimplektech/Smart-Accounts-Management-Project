@@ -19,6 +19,7 @@ class ReceiptOCRService:
             response = client.detect_document_text(
                 Document={"Bytes": image_file.read()}
             )
+            print("Textract full response:", response)  # Debug log
             lines = [
                 item["Text"]
                 for item in response["Blocks"]
