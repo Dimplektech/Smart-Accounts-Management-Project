@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 import json
-from storages.backends.gcloud import GoogleCloudStorage
 
 
 class Receipt(models.Model):
