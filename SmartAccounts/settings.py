@@ -14,12 +14,8 @@ from decouple import config
 from pathlib import Path
 import os
 import dj_database_url
-from google.oauth2 import service_account
-import json
-import storages
-import sys
 
-print(storages.__file__)
+## Removed unused imports after switching to local file storage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -170,25 +166,5 @@ STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
 
 # Google Cloud Storage Configuration
 
-DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-GS_BUCKET_NAME = "smart-account-reciept-holder"
-
-GOOGLE_CREDENTIALS_JSON = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-
-if GOOGLE_CREDENTIALS_JSON:
-    GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
-        json.loads(GOOGLE_CREDENTIALS_JSON)
-    )
-else:
-    GS_CREDENTIALS = None  # Or handle error/raise exception
-
-
-print("DEBUG: DEFAULT_FILE_STORAGE =", DEFAULT_FILE_STORAGE, file=sys.stderr)
-print("DEBUG: GS_BUCKET_NAME =", GS_BUCKET_NAME, file=sys.stderr)
-print("DEBUG: GOOGLE_CREDENTIALS_JSON is set:", bool(GOOGLE_CREDENTIALS_JSON), file=sys.stderr)
-
-if DEBUG:
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-else:
-    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
