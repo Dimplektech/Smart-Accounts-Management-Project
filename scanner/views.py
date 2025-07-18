@@ -117,6 +117,7 @@ def upload_receipt(request):
                         )
                     else:
                         receipt.status = "failed"
+                        receipt.ocr_error = "OCR returned no result or empty data."
                         receipt.save()
                         messages.warning(
                             request, "OCR processing failed, but receipt saved."
