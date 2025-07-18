@@ -53,7 +53,7 @@ def upload_receipt(request):
                     # Use process_receipt_from_url if image is remote (GCS or other URL)
                     # Always use the file object for OCR to avoid S3 permission issues
                     with receipt.image.open("rb") as f:
-                        result = ocr_service.process_receipt(f)
+                        result = ocr_service.process_receipt_textract(f)
 
                     if result:
                         # Convert date object to string for JSON storage

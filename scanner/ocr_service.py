@@ -1,10 +1,5 @@
-"""
-OCR service for processing receipt images using Tesseract OCR
-"""
 
-import cv2
-import pytesseract
-import numpy as np
+
 from PIL import Image
 import re
 from decimal import Decimal
@@ -15,32 +10,43 @@ from io import BytesIO
 
 
 class ReceiptOCRService:
+    def extract_text_textract(self, image_file):
+        """Extract text from receipt image using AWS Textract (file-like object)"""
+        try:
+            import boto3
+            import os
+
+            region = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
+            client = boto3.client("textract", region_name=region)
+            response = client.detect_document_text(
+                Document={"Bytes": image_file.read()}
+            )
+            lines = [
+                item["Text"]
+                for item in response["Blocks"]
+                if item["BlockType"] == "LINE"
+            ]
+            return "\n".join(lines)
+        except Exception as e:
+            print(f"Textract OCR error: {str(e)}")
+            return ""
+
+    def process_receipt_textract(self, image_file):
+        """Complete pipeline to process a receipt image using Textract"""
+        try:
+            raw_text = self.extract_text_textract(image_file)
+            if not raw_text:
+                return None
+            parsed_data = self.parse_receipt_data(raw_text)
+            return parsed_data
+        except Exception as e:
+            print(f"Error processing receipt with Textract: {str(e)}")
+            return None
+
     """Service class for OCR processing of receipts"""
 
     def __init__(self):
-        # Configure tesseract path for Windows and Heroku
-        try:
-            import platform
-            import os
 
-            if platform.system() == "Windows":
-                possible_paths = [
-                    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-                    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
-                    r"C:\Tesseract-OCR\tesseract.exe",
-                ]
-                for path in possible_paths:
-                    if os.path.exists(path):
-                        pytesseract.pytesseract.tesseract_cmd = path
-                        break
-            else:
-                # On Heroku, use the apt buildpack path
-                heroku_path = "/app/.apt/usr/bin/tesseract"
-                if os.path.exists(heroku_path):
-                    pytesseract.pytesseract.tesseract_cmd = heroku_path
-        except Exception as e:
-            print(f"Warning: Could not configure Tesseract path: {e}")
-            print("Please ensure Tesseract is installed and accessible")
 
     def preprocess_image(self, image_file):
         """Preprocess image for better OCR results (file-like object)"""
