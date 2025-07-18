@@ -1,5 +1,3 @@
-
-
 from PIL import Image
 import re
 from decimal import Decimal
@@ -45,41 +43,7 @@ class ReceiptOCRService:
 
     """Service class for OCR processing of receipts"""
 
-    def __init__(self):
-
-
-    def preprocess_image(self, image_file):
-        """Preprocess image for better OCR results (file-like object)"""
-        try:
-            file_bytes = np.asarray(bytearray(image_file.read()), dtype=np.uint8)
-            image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            return thresh
-        except Exception as e:
-            print(f"Error in image preprocessing: {e}")
-            return None
-
-    def extract_text(self, image_file):
-        """Extract text from receipt image using OCR (file-like object)"""
-        try:
-            processed_image = self.preprocess_image(image_file)
-            if processed_image is None:
-                return ""
-            pil_image = Image.fromarray(processed_image)
-            configs = ["--psm 6", "--psm 4", "--psm 3"]
-            text = ""
-            for config in configs:
-                try:
-                    text = pytesseract.image_to_string(pil_image, config=config)
-                    if text.strip():
-                        break
-                except:
-                    continue
-            return text.strip()
-        except Exception as e:
-            print(f"Error extracting text: {str(e)}")
-            return ""
+    # No __init__ needed for Textract-only OCR
 
     def parse_receipt_data(self, text):
         """Parse extracted text to extract structured data"""
