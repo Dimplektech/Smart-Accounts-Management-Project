@@ -35,25 +35,35 @@ def upload_receipt(request):
             from django.core.files.storage import default_storage
 
             logging.error(f"DEBUG: Default storage: {default_storage.__class__}")
+
             try:
-                # Create receipt instance
-                receipt = Receipt.objects.create(
-                    user=request.user,
-                    image=image_file,
-                    original_filename=image_file.name,
-                    status="processing",
-                )
-                logging.error(f"DEBUG: Receipt image url: {receipt.image.url}")
-                logging.error(f"DEBUG: Receipt image name: {receipt.image.name}")
+                # Create receipt instance with explicit error logging
                 try:
-                    # Try OCR processing
+                    receipt = Receipt.objects.create(
+                        user=request.user,
+                        image=image_file,
+                        original_filename=image_file.name,
+                        status="processing",
+                    )
+                    logging.error(f"DEBUG: Receipt image url: {receipt.image.url}")
+                    logging.error(f"DEBUG: Receipt image name: {receipt.image.name}")
+                except Exception as file_save_error:
+                    logging.error(
+                        f"ERROR: Exception during file save: {file_save_error}"
+                    )
+                    import traceback
+
+                    logging.error(traceback.format_exc())
+                    messages.error(request, f"File upload error: {file_save_error}")
+                    return redirect("scanner:upload_receipt")
+
+                try:
+                    # Try OCR processing with Google Vision
                     from .ocr_service import ReceiptOCRService
 
                     ocr_service = ReceiptOCRService()
-                    # Use process_receipt_from_url if image is remote (GCS or other URL)
-                    # Always use the file object for OCR to avoid S3 permission issues
                     with receipt.image.open("rb") as f:
-                        result = ocr_service.process_receipt_textract(f)
+                        result = ocr_service.process_receipt_vision(f)
 
                     if result:
                         # Convert date object to string for JSON storage

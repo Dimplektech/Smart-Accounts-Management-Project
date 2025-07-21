@@ -10,16 +10,40 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-from decouple import config
-from pathlib import Path
+# Set Google Vision API credentials from .env if available (must be before any Google API usage)
 import os
+from decouple import config
+
+GOOGLE_CREDENTIALS_PATH = config("GS_CREDENTIALS", default=None)
+if GOOGLE_CREDENTIALS_PATH:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
+
+
+# --- Google Cloud Storage settings (must be set before any model/file import) ---
+from decouple import config, AutoConfig
+from google.oauth2 import service_account
+from pathlib import Path
 import dj_database_url
+import json
+import base64
 
-## Removed unused imports after switching to local file storage
 
+GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="smart-account-reciept-holder")
+GS_CREDENTIALS_B64 = os.environ.get("GS_CREDENTIALS_B64")
+if GS_CREDENTIALS_B64:
+    creds_json = base64.b64decode(GS_CREDENTIALS_B64).decode("utf-8")
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_info(json.loads(creds_json))
+else:
+    GS_CREDENTIALS_PATH = config("GS_CREDENTIALS", default=None)
+    if not GS_CREDENTIALS_PATH or not os.path.exists(GS_CREDENTIALS_PATH):
+        raise FileNotFoundError(
+            f"Google service account credentials file not found: {GS_CREDENTIALS_PATH}"
+        )
+    with open(GS_CREDENTIALS_PATH) as f:
+        GS_CREDENTIALS = service_account.Credentials.from_service_account_info(json.load(f))
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+auto_config = AutoConfig(search_path=BASE_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -151,10 +175,14 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+
 # WhiteNoise configuration
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Set the default file storage to Google Cloud Storage as the final storage setting
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 
 # Redirect all login-required redirects to /login/
 LOGIN_URL = "/login/"
@@ -163,13 +191,3 @@ LOGIN_URL = "/login/"
 STRIPE_PUBLISHABLE_KEY = config("STRIPE_PUBLISHABLE_KEY", default="")
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
 # STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")
-
-
-# Amazon S3 Storage Configuration
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME", default="us-east-1")
-AWS_QUERYSTRING_AUTH = False  # Optional: makes URLs public
-MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"

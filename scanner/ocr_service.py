@@ -1,50 +1,41 @@
-from PIL import Image
 import re
-from decimal import Decimal
 from datetime import datetime
-import json
-import requests
-from io import BytesIO
+from PIL import Image
 
 
 class ReceiptOCRService:
-    def extract_text_textract(self, image_file):
-        """Extract text from receipt image using AWS Textract (file-like object)"""
-        try:
-            import boto3
-            import os
+    def extract_text_vision(self, image_file):
+        """Extract text from receipt image using Google Vision API (file-like object)"""
+        from google.cloud import vision
+        import io
 
-            region = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
-            client = boto3.client("textract", region_name=region)
-            response = client.detect_document_text(
-                Document={"Bytes": image_file.read()}
-            )
-            print("Textract full response:", response)  # Debug log
-            lines = [
-                item["Text"]
-                for item in response["Blocks"]
-                if item["BlockType"] == "LINE"
-            ]
-            return "\n".join(lines)
+        try:
+            client = vision.ImageAnnotatorClient()
+            content = image_file.read()
+            image = vision.Image(content=content)
+            response = client.text_detection(image=image)
+            texts = response.text_annotations
+            if not texts:
+                return ""
+            # The first item is the full text, the rest are blocks
+            return texts[0].description
         except Exception as e:
-            print(f"Textract OCR error: {str(e)}")
+            print(f"Vision OCR error: {str(e)}")
             return ""
 
-    def process_receipt_textract(self, image_file):
-        """Complete pipeline to process a receipt image using Textract"""
+    def process_receipt_vision(self, image_file):
+        """Complete pipeline to process a receipt image using Google Vision API"""
         try:
-            raw_text = self.extract_text_textract(image_file)
+            raw_text = self.extract_text_vision(image_file)
             if not raw_text:
                 return None
             parsed_data = self.parse_receipt_data(raw_text)
             return parsed_data
         except Exception as e:
-            print(f"Error processing receipt with Textract: {str(e)}")
+            print(f"Error processing receipt with Vision: {str(e)}")
             return None
 
     """Service class for OCR processing of receipts"""
-
-    # No __init__ needed for Textract-only OCR
 
     def parse_receipt_data(self, text):
         """Parse extracted text to extract structured data"""
