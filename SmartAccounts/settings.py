@@ -30,17 +30,38 @@ import base64
 
 GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="smart-account-reciept-holder")
 GS_CREDENTIALS_B64 = os.environ.get("GS_CREDENTIALS_B64")
+GS_CREDENTIALS = None
 if GS_CREDENTIALS_B64:
     creds_json = base64.b64decode(GS_CREDENTIALS_B64).decode("utf-8")
-    GS_CREDENTIALS = service_account.Credentials.from_service_account_info(json.loads(creds_json))
-else:
-    GS_CREDENTIALS_PATH = config("GS_CREDENTIALS", default=None)
-    if not GS_CREDENTIALS_PATH or not os.path.exists(GS_CREDENTIALS_PATH):
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
+        json.loads(creds_json)
+    )
+    # Set for Vision API usage
+    os.environ["GS_CREDENTIALS_JSON"] = creds_json
+elif config("GS_CREDENTIALS", default=None):
+    GS_CREDENTIALS_PATH = config("GS_CREDENTIALS")
+    if not os.path.exists(GS_CREDENTIALS_PATH):
         raise FileNotFoundError(
             f"Google service account credentials file not found: {GS_CREDENTIALS_PATH}"
         )
     with open(GS_CREDENTIALS_PATH) as f:
-        GS_CREDENTIALS = service_account.Credentials.from_service_account_info(json.load(f))
+        creds_json = f.read()
+        GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
+            json.loads(creds_json)
+        )
+        os.environ["GS_CREDENTIALS_JSON"] = creds_json
+
+# Set up storage and media settings
+if GS_BUCKET_NAME and GS_CREDENTIALS:
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    GS_DEFAULT_ACL = "publicRead"
+    GS_FILE_OVERWRITE = False
+    GS_LOCATION = "receipts"
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+else:
+    # Fallback to local storage if GCS is not configured
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = os.path.join(Path(__file__).resolve().parent.parent, "media")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 auto_config = AutoConfig(search_path=BASE_DIR)

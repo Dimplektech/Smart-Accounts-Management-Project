@@ -9,8 +9,26 @@ class ReceiptOCRService:
         from google.cloud import vision
         import io
 
+
+import os
+import json
+from google.cloud import vision
+from google.oauth2 import service_account
+
+
+# Helper to get a Vision API client using credentials from the environment
+def get_vision_client():
+    creds_json = os.environ.get("GS_CREDENTIALS_JSON")
+    if creds_json:
+        credentials = service_account.Credentials.from_service_account_info(
+            json.loads(creds_json)
+        )
+        return vision.ImageAnnotatorClient(credentials=credentials)
+    else:
+        return vision.ImageAnnotatorClient()
+
         try:
-            client = vision.ImageAnnotatorClient()
+            client = get_vision_client()
             content = image_file.read()
             image = vision.Image(content=content)
             response = client.text_detection(image=image)
