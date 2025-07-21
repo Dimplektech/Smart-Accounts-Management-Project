@@ -1,15 +1,6 @@
 import re
 from datetime import datetime
 from PIL import Image
-
-
-class ReceiptOCRService:
-    def extract_text_vision(self, image_file):
-        """Extract text from receipt image using Google Vision API (file-like object)"""
-        from google.cloud import vision
-        import io
-
-
 import os
 import json
 from google.cloud import vision
@@ -27,6 +18,10 @@ def get_vision_client():
     else:
         return vision.ImageAnnotatorClient()
 
+
+class ReceiptOCRService:
+    def extract_text_vision(self, image_file):
+        """Extract text from receipt image using Google Vision API (file-like object)"""
         try:
             client = get_vision_client()
             content = image_file.read()
@@ -52,8 +47,6 @@ def get_vision_client():
         except Exception as e:
             print(f"Error processing receipt with Vision: {str(e)}")
             return None
-
-    """Service class for OCR processing of receipts"""
 
     def parse_receipt_data(self, text):
         """Parse extracted text to extract structured data"""
