@@ -1,0 +1,197 @@
+<div class="card mb-4 shadow">
+  <!-- Chart.js and ChartDataLabels CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <div class="card-header bg-info text-white">
+    <i class="fas fa-calendar-alt me-2"></i>Monthly Income & Expenses
+  </div>
+  <div class="card-body">
+    <p class="text-muted">
+      This report shows your income and expenses trend for each month in the
+      selected period.
+    </p>
+    <div class="mb-4">
+      <!-- Summary Section rendered by JS -->
+      <div id="monthly-summary" class="row mb-3 justify-content-center"></div>
+
+      <canvas id="monthlyTrendsChart"></canvas>
+    </div>
+    <div class="table-responsive">
+      {% if not monthly_trends or monthly_trends|length == 0 %}
+      <div class="alert alert-warning">
+        No monthly data available to display.
+      </div>
+      {% endif %}
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Total</th>
+            <th>Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in monthly_trends_with_change %}
+          <tr>
+            <td>{{ row.month }}</td>
+            <td class="fw-bold">{{ row.total }}</td>
+            <td>
+              {% if forloop.first %}
+              <span class="text-muted">-</span>
+              {% elif row.change > 0 %}
+              <span class="text-success">▲ +{{ row.change }}</span>
+              {% elif row.change < 0 %}
+              <span class="text-danger">▼ {{ row.change }}</span>
+              {% else %}
+              <span class="text-secondary">0</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Category breakdown section removed -->
+    </div>
+  </div>
+</div>
+<script>
+  // Render summary section above the chart
+  function renderMonthlySummary(labels, dataTotals) {
+    if (!labels.length) return;
+    const total = dataTotals.reduce((a, b) => a + b, 0);
+    const avg = total / dataTotals.length;
+    let max = Math.max(...dataTotals);
+    let min = Math.min(...dataTotals);
+    let bestIdx = dataTotals.indexOf(max);
+    let worstIdx = dataTotals.indexOf(min);
+    const summaryHtml = `
+      <div class="col-auto">
+        <div class="card card-body bg-light border-info mb-2 text-center">
+          <div><strong>Total:</strong> ${total.toFixed(2)}</div>
+          <div><strong>Average:</strong> ${avg.toFixed(2)}</div>
+          <div><strong>Best Month:</strong> ${labels[bestIdx]} (${max.toFixed(
+      2
+    )})</div>
+          <div><strong>Worst Month:</strong> ${labels[worstIdx]} (${min.toFixed(
+      2
+    )})</div>
+        </div>
+      </div>
+    `;
+    document.getElementById("monthly-summary").innerHTML = summaryHtml;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Monthly Trends Chart and Summary (only if elements exist)
+    const trendsCanvas = document.getElementById("monthlyTrendsChart");
+    const summaryDiv = document.getElementById("monthly-summary");
+    if (trendsCanvas && summaryDiv) {
+      const data = JSON.parse("{{ monthly_trends_with_change_json|escapejs }}");
+      const labels = data.map((row) => row.month);
+      const dataTotals = data.map((row) => row.total);
+      renderMonthlySummary(labels, dataTotals);
+      if (window.Chart) {
+        const ctx = trendsCanvas.getContext("2d");
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, "#4f8cff55");
+        gradient.addColorStop(1, "#ffffff00");
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Monthly Total",
+                data: dataTotals,
+                borderColor: "#4f8cff",
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: data.map((row, idx, arr) =>
+                  idx === 0
+                    ? "#4f8cff"
+                    : row.change > 0
+                    ? "#28a745"
+                    : row.change < 0
+                    ? "#dc3545"
+                    : "#6c757d"
+                ),
+                pointRadius: 6,
+                pointHoverRadius: 9,
+                pointBorderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: "bottom", labels: { font: { size: 16 } } },
+              tooltip: {
+                enabled: true,
+                bodyFont: { size: 16 },
+                titleFont: { size: 16 },
+                callbacks: {
+                  label: function (context) {
+                    let label = context.dataset.label || "";
+                    if (label) label += ": ";
+                    label += context.parsed.y;
+                    if (context.dataIndex > 0) {
+                      const change = data[context.dataIndex].change;
+                      label +=
+                        " (" +
+                        (change > 0 ? "+" : "") +
+                        (change !== null ? change.toFixed(2) : "-") +
+                        ")";
+                    }
+                    return label;
+                  },
+                },
+              },
+              title: {
+                display: true,
+                text: "Monthly Total (Net Amount)",
+                font: { size: 20 },
+                padding: { top: 10, bottom: 20 },
+              },
+              datalabels: {
+                display: true,
+                color: "#222",
+                font: { weight: "bold", size: 14 },
+                align: "top",
+                formatter: function (value, context) {
+                  return value;
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid: { display: true, color: "#e0e0e0" },
+                ticks: { font: { size: 14 } },
+                title: {
+                  display: true,
+                  text: "Month",
+                  font: { size: 16 },
+                },
+              },
+              y: {
+                grid: { display: true, color: "#e0e0e0" },
+                ticks: { font: { size: 14 } },
+                title: {
+                  display: true,
+                  text: "Total Amount",
+                  font: { size: 16 },
+                },
+              },
+            },
+          },
+          plugins: [
+            window.ChartDataLabels ? window.ChartDataLabels : undefined,
+          ].filter(Boolean),
+        });
+      }
+    }
+
+    // Category breakdown chart code removed
+  });
+</script>

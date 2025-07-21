@@ -1,42 +1,185 @@
-<div class="card mb-4">
-  <div class="card-header">
-    <i class="fas fa-chart-line me-2"></i>Income vs Expenses
+<div class="card mb-4 shadow">
+  <div
+    class="card-header bg-primary text-white d-flex align-items-center justify-content-between"
+  >
+    <span><i class="fas fa-chart-line me-2"></i>Income vs Expenses</span>
+    <span id="netBadge"></span>
   </div>
   <div class="card-body">
-    <!-- Your chart and summary for income vs expenses here -->
-    <p class="text-muted">This report compares your total income against your total expenses over a selected period.</p>
-    <div class="mb-3">
-      <label for="reportPeriod" class="form-label">Select Period:</label>
-      <select id="reportPeriod" class="form-select">
-        <option value="last_month">Last Month</option>
-        <option value="last_3_months">Last 3 Months</option>
-        <option value="last_6_months">Last 6 Months</option>
-        <option value="last_year">Last Year</option>
-      </select>
-    
-    </div>
-    <div class="mb-3">
-      <label for="incomeAmount" class="form-label">Total Income:</label>
-      <input type="text" id="incomeAmount" class="form-control" value="{{ total_income }}" readonly>
-    </div>
-    <div class="mb-3">
-      <label for="expensesAmount" class="form-label">Total Expenses:</label>
-      <input type="text" id="expensesAmount" class="form-control" value="{{ total_expenses }}" readonly>
-    </div>
-    <div class="mb-3">
-      <label for="netAmount" class="form-label">Net Amount:</label>
-      <input type="text" id="netAmount" class="form-control" value="{{ net_amount }}" readonly>
-    </div>
-    <div class="mb-3">
-      <label for="incomeVsExpensesChart" class="form-label">Income vs Expenses Chart:</label>
-    </div>  
+    <p class="text-muted">
+      This report compares your total income against your total expenses over a
+      selected period.
+    </p>
 
-    <canvas id="incomeVsExpensesChart"></canvas>
+    <div class="row mb-3 g-3 flex-wrap">
+      <div class="col-12 col-md-4">
+        <label for="incomeAmount" class="form-label">Total Income:</label>
+        <div class="input-group border border-2 border-primary rounded">
+          <span class="input-group-text bg-primary text-white fw-bold">
+            <i class="fas fa-arrow-up"></i>
+          </span>
+          <input
+            type="text"
+            id="incomeAmount"
+            class="form-control bg-light text-primary fw-bold"
+            value="{{ total_income }}"
+            readonly
+          />
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <label for="expensesAmount" class="form-label">Total Expenses:</label>
+        <div class="input-group border border-2 border-danger rounded">
+          <span class="input-group-text bg-danger text-white fw-bold">
+            <i class="fas fa-arrow-down"></i>
+          </span>
+          <input
+            type="text"
+            id="expensesAmount"
+            class="form-control bg-light text-danger fw-bold"
+            value="{{ total_expenses }}"
+            readonly
+          />
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <label for="netAmount" class="form-label">Net Amount:</label>
+        <div class="input-group border border-2 border-info rounded">
+          <span class="input-group-text bg-info text-white fw-bold">
+            <i class="fas fa-balance-scale"></i>
+          </span>
+          <input
+            type="text"
+            id="netAmount"
+            class="form-control bg-light text-info fw-bold"
+            value="{{ net_amount }}"
+            readonly
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Savings Rate:</label>
+      <div class="progress" style="height: 25px">
+        <div
+          id="savingsBar"
+          class="progress-bar"
+          role="progressbar"
+          style="width: 0%; color: #222; font-weight: bold"
+        >
+          0%
+        </div>
+      </div>
+      <small class="text-muted"
+        >Savings rate = (Income - Expenses) / Income</small
+      >
+    </div>
+
+    <div class="mb-4">
+      <label for="incomeVsExpensesChart" class="form-label"
+        >Income vs Expenses Chart:</label
+      >
+      <div class="d-flex justify-content-center">
+        <div style="width: 100%; max-width: 320px">
+          <canvas
+            id="incomeVsExpensesChart"
+            style="width: 100%; height: auto; aspect-ratio: 1/1"
+          ></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
 <script id="income-expenses-data" type="application/json">
   {
     "income": {{ total_income|default:0 }},
-    "expenses": {{ total_expenses|default:0 }}
+    "expenses": {{ total_expenses|default:0 }},
+    "net": {{ net_amount|default:0 }}
   }
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const data = JSON.parse(
+      document.getElementById("income-expenses-data").textContent
+    );
+    const income = data.income || 0;
+    const expenses = data.expenses || 0;
+    const net = data.net || 0;
+
+    // Chart.js Doughnut
+    if (window.Chart) {
+      const ctx = document
+        .getElementById("incomeVsExpensesChart")
+        .getContext("2d");
+      new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Income", "Expenses"],
+          datasets: [
+            {
+              data: [income, expenses],
+              backgroundColor: [
+                "#4f8cff", // Income: blue
+                "#ff6384", // Expenses: pink/red
+              ],
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: "70%",
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: { enabled: true },
+          },
+        },
+      });
+    }
+
+    // Net badge
+    const netBadge = document.getElementById("netBadge");
+    if (netBadge) {
+      if (net > 0) {
+        netBadge.innerHTML =
+          '<span class="badge" style="background-color:#4f8cff;color:#fff;">Net Positive: +' +
+          net.toLocaleString() +
+          "</span>";
+      } else if (net < 0) {
+        netBadge.innerHTML =
+          '<span class="badge bg-danger">Net Negative: ' +
+          net.toLocaleString() +
+          "</span>";
+      } else {
+        netBadge.innerHTML =
+          '<span class="badge bg-secondary">Break Even</span>';
+      }
+    }
+
+    // Savings rate progress bar with dynamic color
+    const savingsBar = document.getElementById("savingsBar");
+    let savingsRate = 0;
+    if (income > 0) {
+      savingsRate = Math.round(((income - expenses) / income) * 100);
+    }
+    savingsBar.style.width = Math.max(0, savingsRate) + "%";
+    savingsBar.textContent = savingsRate + "%";
+    // Color: blue for >=50%, yellow for 10-49%, red for <10%
+    if (savingsRate >= 50) {
+      savingsBar.style.background =
+        "linear-gradient(90deg, #4f8cff 0%, #43e97b 100%)";
+      savingsBar.style.color = "#222";
+    } else if (savingsRate >= 10) {
+      savingsBar.style.background =
+        "linear-gradient(90deg, #ffe259 0%, #ffa751 100%)";
+      savingsBar.style.color = "#222";
+    } else {
+      savingsBar.style.background =
+        "linear-gradient(90deg, #ff5858 0%, #f09819 100%)";
+      savingsBar.style.color = "#fff";
+    }
+  });
 </script>
