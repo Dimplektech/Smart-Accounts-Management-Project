@@ -172,7 +172,7 @@ def dashboard_view(request):
 
     # Convert category_spending amounts to float
     category_spending = [
-        {"category": item["category__name"], "total": float(item["total"])}
+        {"category__name": item["category__name"], "total": float(item["total"])}
         for item in category_spending
     ]
 
