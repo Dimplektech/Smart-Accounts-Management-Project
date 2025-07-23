@@ -12,19 +12,43 @@ Receipt - Smart Account Management{% endblock %} {% block content %}
             {% csrf_token %}
 
             <div class="mb-4">
-              <label for="receipt_image" class="form-label">
-                <i class="fas fa-image me-2"></i>Select Receipt Image
-              </label>
+              <label class="form-label"
+                ><i class="fas fa-image me-2"></i>Select Receipt Image</label
+              >
+              <!-- Hidden file input for scan (camera) -->
               <input
                 type="file"
-                class="form-control"
-                id="receipt_image"
+                class="form-control d-none"
+                id="scan_input"
                 name="receipt_image"
                 accept="image/*"
                 capture="environment"
-                required
               />
-              <div class="form-text">
+              <!-- Hidden file input for upload (file picker) -->
+              <input
+                type="file"
+                class="form-control d-none"
+                id="upload_input"
+                name="receipt_image"
+                accept="image/*"
+              />
+              <div class="d-flex gap-2">
+                <button
+                  type="button"
+                  id="scanBtn"
+                  class="btn btn-success flex-fill d-block d-sm-none"
+                >
+                  <i class="fas fa-camera me-2"></i>Scan with Camera
+                </button>
+                <button
+                  type="button"
+                  id="uploadBtn"
+                  class="btn btn-primary flex-fill"
+                >
+                  <i class="fas fa-upload me-2"></i>Upload Receipt
+                </button>
+              </div>
+              <div class="form-text mt-2">
                 Supported formats: JPG, PNG, GIF. Max size: 10MB
               </div>
             </div>
@@ -94,26 +118,53 @@ Receipt - Smart Account Management{% endblock %} {% block content %}
 {% endblock %} {% block extra_js %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const fileInput = document.getElementById("receipt_image");
+    const scanInput = document.getElementById("scan_input");
+    const uploadInput = document.getElementById("upload_input");
+    const scanBtn = document.getElementById("scanBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
     const imagePreview = document.getElementById("imagePreview");
     const previewImg = document.getElementById("previewImg");
     const uploadForm = document.getElementById("uploadForm");
     const submitBtn = document.getElementById("submitBtn");
     const processingIndicator = document.getElementById("processingIndicator");
 
-    // Image preview functionality
-    fileInput.addEventListener("change", function (e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          previewImg.src = e.target.result;
-          imagePreview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-      } else {
-        imagePreview.style.display = "none";
-      }
+    // Button triggers
+    if (scanBtn) {
+      scanBtn.addEventListener("click", function () {
+        scanInput.click();
+      });
+    }
+    if (uploadBtn) {
+      uploadBtn.addEventListener("click", function () {
+        uploadInput.click();
+      });
+    }
+
+    // Image preview functionality for both inputs
+    function handleFileInput(input) {
+      input.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            previewImg.src = e.target.result;
+            imagePreview.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        } else {
+          imagePreview.style.display = "none";
+        }
+      });
+    }
+    handleFileInput(scanInput);
+    handleFileInput(uploadInput);
+
+    // When a file is selected, submit the form automatically
+    scanInput.addEventListener("change", function () {
+      if (scanInput.files.length > 0) uploadForm.submit();
+    });
+    uploadInput.addEventListener("change", function () {
+      if (uploadInput.files.length > 0) uploadForm.submit();
     });
 
     // Form submission with processing indicator
