@@ -1,17 +1,32 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from django.db.models import Count, Sum
+from django.db.models import Sum
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime, date
 import json
 from .models import Transaction, Account, Category, Budget
 from .forms import TransactionForm, AccountForm, BudgetForm, RegistrationForm
-from datetime import date
 from django.db.models.functions import TruncMonth
+from django.views.decorators.http import require_POST
+
+
+@login_required
+@require_POST
+def delete_transaction_view(request, transaction_id):
+    """Delete a transaction and update account balance accordingly."""
+    transaction = get_object_or_404(Transaction, id=transaction_id, user=request.user)
+    account = transaction.account
+    # Reverse the balance effect
+    if transaction.transaction_type == "income":
+        account.balance -= transaction.amount
+    elif transaction.transaction_type == "expense":
+        account.balance += transaction.amount
+    account.save()
+    transaction.delete()
+    messages.success(request, "Transaction deleted successfully.")
+    return redirect("accounts:transaction_list")
 
 
 def login_view(request):
