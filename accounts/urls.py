@@ -15,6 +15,11 @@ urlpatterns = [
     path("transactions/", views.transaction_list_view, name="transaction_list"),
     path("add-transaction/", views.add_transaction_view, name="add_transaction"),
     path(
+        "transactions/<int:transaction_id>/edit/",
+        views.edit_transaction_view,
+        name="edit_transaction",
+    ),
+    path(
         "transactions/<int:transaction_id>/delete/",
         views.delete_transaction_view,
         name="delete_transaction",

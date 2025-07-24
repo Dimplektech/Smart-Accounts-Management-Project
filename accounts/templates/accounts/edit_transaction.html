@@ -1,0 +1,43 @@
+{% extends 'accounts/base.html' %} {% load static %} {% block title %}Edit
+Transaction - Smart Account Management{% endblock %} {% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Transaction</h4>
+        </div>
+        <div class="card-body">
+          {% if messages %} {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+            role="alert"
+          >
+            {{ message }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+          {% endfor %} {% endif %}
+          <form method="post">
+            {% csrf_token %} {{ form.as_p }}
+            <div class="d-flex justify-content-between mt-4">
+              <a
+                href="{% url 'accounts:transaction_list' %}"
+                class="btn btn-secondary"
+              >
+                <i class="fas fa-arrow-left me-1"></i>Back to List
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i>Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

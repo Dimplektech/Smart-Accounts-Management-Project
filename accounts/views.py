@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
@@ -543,3 +544,61 @@ def reports_view(request):
         "report_type": report_type,
     }
     return render(request, "accounts/reports.html", context)
+
+
+# Edit transaction view
+@login_required
+def edit_transaction_view(request, transaction_id):
+    transaction = get_object_or_404(Transaction, id=transaction_id, user=request.user)
+    old_amount = transaction.amount
+    old_type = transaction.transaction_type
+    old_account = transaction.account
+
+    if request.method == "POST":
+        form = TransactionForm(request.POST, instance=transaction, user=request.user)
+        if form.is_valid():
+            updated_transaction = form.save(commit=False)
+            updated_transaction.user = request.user
+            updated_transaction.save()
+
+            # If account, amount, or type changed, update balances
+            if old_account != updated_transaction.account:
+                # Revert old account
+                if old_type == "income":
+                    old_account.balance -= old_amount
+                elif old_type == "expense":
+                    old_account.balance += old_amount
+                old_account.save()
+                # Apply to new account
+                account = updated_transaction.account
+                if updated_transaction.transaction_type == "income":
+                    account.balance += updated_transaction.amount
+                elif updated_transaction.transaction_type == "expense":
+                    account.balance -= updated_transaction.amount
+                account.save()
+            else:
+                # Same account, but maybe amount/type changed
+                account = updated_transaction.account
+                if old_type == "income":
+                    account.balance -= old_amount
+                elif old_type == "expense":
+                    account.balance += old_amount
+                if updated_transaction.transaction_type == "income":
+                    account.balance += updated_transaction.amount
+                elif updated_transaction.transaction_type == "expense":
+                    account.balance -= updated_transaction.amount
+                account.save()
+
+            messages.success(request, "Transaction updated successfully!")
+            return redirect("accounts:transaction_list")
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = TransactionForm(instance=transaction, user=request.user)
+
+    return render(
+        request,
+        "accounts/edit_transaction.html",
+        {"form": form, "transaction": transaction},
+    )
+

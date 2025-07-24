@@ -57,7 +57,7 @@ if GS_BUCKET_NAME and GS_CREDENTIALS:
     GS_DEFAULT_ACL = "publicRead"
     GS_FILE_OVERWRITE = False
     GS_LOCATION = "receipts"
-    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
 else:
     # Fallback to local storage if GCS is not configured
     MEDIA_URL = "/media/"
@@ -202,7 +202,8 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Set the default file storage to Google Cloud Storage as the final storage setting
+
+# Use classic Django config for Google Cloud Storage
 DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 
 # Redirect all login-required redirects to /login/
