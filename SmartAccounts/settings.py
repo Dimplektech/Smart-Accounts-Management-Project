@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     "scanner",  # Custom app for managing accounts
     "payments",  # Custom app for payment processing
     "storages",
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
