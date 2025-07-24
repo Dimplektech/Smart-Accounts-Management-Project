@@ -37,6 +37,18 @@ def pricing_page(request):
             "stripe_price_id": "",  # No Stripe price for free plan
         },
         {
+            "name": "Basic",
+            "price": 3.99,
+            "features": [
+                "Up to 100 receipts/month",
+                "Standard OCR Processing",
+                "Expense Analytics",
+                "Email Support",
+            ],
+            "is_free": False,
+            "stripe_price_id": "price_basic",  # Replace with actual Stripe price ID if available
+        },
+        {
             "name": "Premium",
             "price": 9.99,
             "features": [
@@ -50,10 +62,29 @@ def pricing_page(request):
             "stripe_price_id": "price_premium",  # You can replace with actual Stripe price ID
         },
     ]
+    # Determine user's current subscription plan (if any)
+    current_plan = None
+    try:
+        if hasattr(request.user, "subscription"):
+            sub = request.user.subscription
+            if sub.status == "active":
+                # Extract plan name from Subscription model (e.g., 'basic', 'premium', 'pro')
+                # Match to plans list by name (case-insensitive)
+                for plan in plans:
+                    if plan["name"].lower() == sub.plan.lower():
+                        current_plan = plan["name"]
+                        break
+    except Exception:
+        current_plan = None
+
     return render(
         request,
-        "payments/pricing.html",  # Changed from simple_pricing.html to pricing.html
-        {"plans": plans, "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY},
+        "payments/pricing.html",
+        {
+            "plans": plans,
+            "stripe_publishable_key": settings.STRIPE_PUBLISHABLE_KEY,
+            "current_plan": current_plan,
+        },
     )
 
 

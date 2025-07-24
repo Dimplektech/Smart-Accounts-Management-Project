@@ -1,10 +1,9 @@
-{% extends 'accounts/base.html' %} 
-{% load static %}
-{% block title %}Pricing Plans - Smart Account Management{% endblock %}
-{% block main_class %}{% endblock%}
+{% extends 'accounts/base.html' %}
+{% load static %} {% block title %}Pricing Plans - Smart Account Management{% endblock %} 
+{% block main_class%}{%endblock%}
 {% block extra_head %}
-    <script src="https://js.stripe.com/v3/"></script>
-{% endblock %}
+<script src="https://js.stripe.com/v3/"></script>
+{% endblock %} 
 {% block extra_css %}
 <style>
   /* Strong overrides for this page */
@@ -328,7 +327,7 @@
     }
   }
 </style>
-{% endblock %}
+{% endblock %} 
 {% block content %}
 <div class="pricing-page-wrapper">
   <div class="container">
@@ -371,16 +370,20 @@
             </div>
 
             <div class="card-footer text-center bg-transparent border-0">
+              {% if current_plan and plan.name == current_plan %}
+              <button class="btn btn-success btn-lg w-100" disabled>
+                <i class="fas fa-check me-2"></i>You're on this plan
+              </button>
+              {% else %}
               <button
                 class="btn subscribe-btn btn-lg w-100"
                 data-plan="{{ plan.name|lower }}"
                 data-price="{{ plan.price }}"
                 data-stripe-price-id="{{ plan.stripe_price_id }}"
               >
-                {% if plan.price == 0 %} Get Started Free {% else %}
-                 Choose Premium
-                {% endif %}
+                {{ plan.name }}
               </button>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -534,8 +537,7 @@
     </div>
   </div>
 </div>
-{% endblock %}
-
+{% endblock %} 
 {% block extra_scripts %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
