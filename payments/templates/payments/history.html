@@ -28,28 +28,61 @@ Account Management{% endblock %} {% block content %}
             <tr>
               <td>{{ payment.created_at|date:"M d, Y H:i" }}</td>
               <td>
-                {{ payment.description|default:"Payment" }} 
+                {{ payment.description|default:"Payment" }}
                 {% if payment.payment_type == 'premium_feature' %}
-                    <small class="text-muted d-block">Premium Feature</small>
+                <small class="text-muted d-block">Premium Feature</small>
                 {% elif payment.payment_type == 'subscription' %}
-                    <small class="text-muted d-block">Subscription</small>
+                <small class="text-muted d-block">Subscription</small>
                 {% endif %}
               </td>
               <td>£{{ payment.amount }}</td>
               <td>
                 <span
-                  class="badge badge-{% if payment.payment_type == 'subscription' %}primary{% elif payment.payment_type == 'premium_feature' %}success{% else %}secondary{% endif %}"
+                  class="badge payment-badge-type {% if payment.payment_type == 'subscription' %}badge-primary{% elif payment.payment_type == 'premium_feature' %}badge-success{% else %}badge-secondary{% endif %}"
                 >
                   {{ payment.get_payment_type_display }}
                 </span>
               </td>
               <td>
                 <span
-                  class="badge badge-{% if payment.status == 'completed' %}success{% elif payment.status == 'pending' %}warning{% elif payment.status == 'failed' %}danger{% else %}secondary{% endif %}"
+                  class="badge payment-badge-status {% if payment.status == 'completed' %}badge-success{% elif payment.status == 'pending' %}badge-warning{% elif payment.status == 'failed' %}badge-danger{% else %}badge-secondary{% endif %}"
                 >
                   {{ payment.get_status_display }}
                 </span>
               </td>
+              {% block extra_css %}
+              <style>
+                /* Only for payment history badges */
+                .payment-badge-type.badge-primary {
+                  background-color: #007bff;
+                  color: #fff;
+                }
+                .payment-badge-type.badge-success {
+                  background-color: #28a745;
+                  color: #fff;
+                }
+                .payment-badge-type.badge-secondary {
+                  background-color: #6c757d;
+                  color: #fff;
+                }
+                .payment-badge-status.badge-success {
+                  background-color: #28a745;
+                  color: #fff;
+                }
+                .payment-badge-status.badge-warning {
+                  background-color: #ffc107;
+                  color: #212529;
+                }
+                .payment-badge-status.badge-danger {
+                  background-color: #dc3545;
+                  color: #fff;
+                }
+                .payment-badge-status.badge-secondary {
+                  background-color: #6c757d;
+                  color: #fff;
+                }
+              </style>
+              {% endblock %}
               <td>
                 <small class="text-muted">
                   {{ payment.stripe_payment_intent_id|truncatechars:20 }}
@@ -88,12 +121,6 @@ Account Management{% endblock %} {% block content %}
     <div class="col-12 text-center">
       <a href="{% url 'payments:pricing' %}" class="btn btn-primary mr-3">
         Upgrade Plan
-      </a>
-      <a
-        href="{% url 'payments:premium_features' %}"
-        class="btn btn-outline-primary"
-      >
-        Buy More Features
       </a>
     </div>
   </div>

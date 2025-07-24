@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='subscription',
             name='plan',
-            field=models.CharField(choices=[('basic', 'Basic Plan - £9.99/month'), ('premium', 'Premium Plan - £19.99/month'), ('pro', 'Pro Plan - £29.99/month')], max_length=20),
+            field=models.CharField(choices=[('basic', 'Basic Plan - £9.99/month'), ('premium', 'Premium Plan - £19.99/month'), ], max_length=20),
         ),
     ]

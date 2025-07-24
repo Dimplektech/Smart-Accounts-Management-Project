@@ -38,7 +38,7 @@ def pricing_page(request):
         },
         {
             "name": "Basic",
-            "price": 3.99,
+            "price": 9.99,
             "features": [
                 "Up to 100 receipts/month",
                 "Standard OCR Processing",
@@ -50,7 +50,7 @@ def pricing_page(request):
         },
         {
             "name": "Premium",
-            "price": 9.99,
+            "price": 19.99,
             "features": [
                 "Unlimited Receipt Scanning",
                 "Advanced OCR Processing",
@@ -99,6 +99,36 @@ def create_payment_intent(request):
             data = json.loads(request.body)
             amount = int(float(data.get("amount", 0)) * 100)  # Convert to cents
             payment_type = data.get("payment_type", "premium_upgrade")
+
+            # Prevent duplicate subscription payment for same plan and period
+            if payment_type in ["subscription", "premium_upgrade"]:
+                from django.utils import timezone
+
+                now = timezone.now()
+                # Try to extract plan from description
+                plan = None
+                desc = data.get("description", "").lower()
+                if "premium" in desc:
+                    plan = "premium"
+                elif "basic" in desc:
+                    plan = "basic"
+                # Fallback to premium if not found
+                if plan not in ["basic", "premium"]:
+                    plan = "premium"
+                # Check for active subscription for this user and plan
+                existing_sub = Subscription.objects.filter(
+                    user=request.user,
+                    plan=plan,
+                    status="active",
+                    current_period_end__gte=now,
+                ).first()
+                if existing_sub:
+                    return JsonResponse(
+                        {
+                            "error": "You already have an active subscription for this plan."
+                        },
+                        status=400,
+                    )
 
             # Create payment intent
             intent = stripe.PaymentIntent.create(
@@ -157,6 +187,62 @@ def payment_success(request):
                     request,
                     f"Payment completed successfully! You now have access to {premium_feature.get_feature_display()}!",
                 )
+            elif payment.payment_type in [
+                "subscription",
+                "premium_upgrade",
+                "basic",
+                "premium",
+            ]:
+                # Always create or update the Subscription for the user for Basic or Premium
+                from django.utils import timezone
+                from datetime import timedelta
+
+                plan = None
+                # Robustly extract plan from payment.description or fallback
+                if payment.description:
+                    desc = payment.description.lower()
+                    if "basic" in desc:
+                        plan = "basic"
+                    elif "premium" in desc:
+                        plan = "premium"
+                # Fallback to premium if not found
+                if plan not in ["basic", "premium"]:
+                    plan = "premium"
+
+                # Set subscription period (e.g., 1 month from now)
+                now = timezone.now()
+                period_start = now
+                period_end = now + timedelta(days=30)
+
+                # Check for existing active subscription for this plan and period
+                existing_sub = Subscription.objects.filter(
+                    user=payment.user,
+                    plan=plan,
+                    status="active",
+                    current_period_end__gte=now,
+                ).first()
+                if not existing_sub:
+                    # Stripe subscription/customer IDs are not available, use payment intent for now
+                    sub_defaults = {
+                        "stripe_subscription_id": payment.stripe_payment_intent_id,
+                        "stripe_customer_id": str(payment.user.id),
+                        "plan": plan,
+                        "status": "active",
+                        "current_period_start": period_start,
+                        "current_period_end": period_end,
+                    }
+                    Subscription.objects.update_or_create(
+                        user=payment.user, defaults=sub_defaults
+                    )
+                    messages.success(
+                        request,
+                        f"Payment completed successfully! Your subscription to the {plan.title()} plan is now active!",
+                    )
+                else:
+                    messages.info(
+                        request,
+                        f"You already have an active subscription to the {plan.title()} plan. No new subscription was created.",
+                    )
             else:
                 # Regular premium upgrade
                 messages.success(

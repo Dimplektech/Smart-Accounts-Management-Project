@@ -45,7 +45,7 @@ class Subscription(models.Model):
     PLAN_CHOICES = [
         ('basic', 'Basic Plan - £9.99/month'),
         ('premium', 'Premium Plan - £19.99/month'),
-        ('pro', 'Pro Plan - £29.99/month'),
+        
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')

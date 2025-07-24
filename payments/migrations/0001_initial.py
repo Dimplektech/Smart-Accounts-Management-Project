@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('stripe_subscription_id', models.CharField(max_length=255, unique=True)),
                 ('stripe_customer_id', models.CharField(max_length=255)),
-                ('plan', models.CharField(choices=[('basic', 'Basic Plan - $9.99/month'), ('premium', 'Premium Plan - $19.99/month'), ('pro', 'Pro Plan - $29.99/month')], max_length=20)),
+                ('plan', models.CharField(choices=[('basic', 'Basic Plan - $9.99/month'), ('premium', 'Premium Plan - $19.99/month')], max_length=20)),
                 ('status', models.CharField(choices=[('active', 'Active'), ('canceled', 'Canceled'), ('past_due', 'Past Due'), ('unpaid', 'Unpaid'), ('trialing', 'Trialing')], default='active', max_length=20)),
                 ('current_period_start', models.DateTimeField()),
                 ('current_period_end', models.DateTimeField()),

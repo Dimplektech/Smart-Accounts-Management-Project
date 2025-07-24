@@ -12,14 +12,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 # Set Google Vision API credentials from .env if available (must be before any Google API usage)
 import os
-from decouple import config
-
-GOOGLE_CREDENTIALS_PATH = config("GS_CREDENTIALS", default=None)
-if GOOGLE_CREDENTIALS_PATH:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
-
-
-# --- Google Cloud Storage settings (must be set before any model/file import) ---
 from decouple import config, AutoConfig
 from google.oauth2 import service_account
 from pathlib import Path
@@ -27,7 +19,11 @@ import dj_database_url
 import json
 import base64
 
+GOOGLE_CREDENTIALS_PATH = config("GS_CREDENTIALS", default=None)
+if GOOGLE_CREDENTIALS_PATH:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
 
+# Google Cloud Storage settings
 GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="smart-account-reciept-holder")
 GS_CREDENTIALS_B64 = os.environ.get("GS_CREDENTIALS_B64")
 GS_CREDENTIALS = None

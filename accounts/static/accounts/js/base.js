@@ -1,11 +1,44 @@
 // accounts/static/accounts/js/base.js
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Disable subscribe button for current plan on page load
+    var currentPlan = (typeof window.CURRENT_PLAN !== 'undefined' ? window.CURRENT_PLAN : '').toLowerCase();
+    document.querySelectorAll('.subscribe-btn').forEach(function(btn) {
+        var plan = (btn.dataset.plan || '').toLowerCase();
+        if (currentPlan && plan && plan === currentPlan) {
+            btn.disabled = true;
+            btn.classList.add('disabled');
+            btn.setAttribute('aria-disabled', 'true');
+            // Remove modal trigger if present
+            if (btn.hasAttribute('data-bs-toggle')) {
+                btn.removeAttribute('data-bs-toggle');
+            }
+        }
+    });
     console.log('🚀 Smart Account Management Base Loading...');
     
     initializeBaseComponents();
     setupGlobalEventListeners();
     setupAccessibility();
+
+    // Prevent payment modal if user already has the selected plan (not just Premium)
+    // Assumes a global variable CURRENT_PLAN is set in the template, e.g. window.CURRENT_PLAN = 'Premium';
+    document.querySelectorAll('.subscribe-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            var plan = (btn.dataset.plan || '').toLowerCase();
+            var currentPlan = (typeof window.CURRENT_PLAN !== 'undefined' ? window.CURRENT_PLAN : '').toLowerCase();
+            if (currentPlan && plan && plan === currentPlan) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                // If this is an <a> with data-bs-toggle="modal", remove the attribute to prevent modal
+                if (btn.hasAttribute('data-bs-toggle')) {
+                    btn.removeAttribute('data-bs-toggle');
+                }
+                showGlobalNotification('You are already on the ' + btn.dataset.plan + ' plan!', 'info');
+                return false;
+            }
+        }, true); // Use capture to ensure this runs before Bootstrap modal
+    });
     // fixDropdownIssues(); // Disabled to allow Bootstrap's default dropdown behavior
     console.log('✅ Base Components Ready!');
 
