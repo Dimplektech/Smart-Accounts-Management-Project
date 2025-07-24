@@ -81,7 +81,7 @@
                     <tbody>
                         {% for transaction in transactions %}
                         <tr>
-                            <td>{{ transaction.date|date:"M d, Y H:i" }}</td>
+                            <td>{{ transaction.date|date:"M d, Y" }}</td>
                             <td>{{ transaction.description }}</td>
                             <td>
                                 <span class="badge {% if transaction.transaction_type == 'income' %}bg-success{% elif transaction.transaction_type == 'expense' %}bg-danger{% else %}bg-info{% endif %}">

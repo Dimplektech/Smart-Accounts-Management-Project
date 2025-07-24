@@ -322,5 +322,6 @@
       timestamp: new Date().getTime() // Prevent caching
   };
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'accounts/js/dashboard.js' %}?v={{ user.id }}-{{ current_month }}"></script>
 {% endblock %}
